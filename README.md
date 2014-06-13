@@ -1,5 +1,9 @@
-C Generic Containers
-====================
+C Generic Containers [![Build Status][]][Travis CI cgc]
+=======================================================
+[Travis CI cgc]: https://travis-ci.org/Harenome/c_generic_containers
+[Build Status]: https://travis-ci.org/Harenome/c_generic_containers.svg?branch=master
+
+Generic containers for C.
 
 License
 -------
