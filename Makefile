@@ -44,7 +44,7 @@ vpath %.so $(PATH_LIB)
 # Compiling
 ################################################################################
 
-all : tests
+all : libcgc.a
 
 %.o: %.c | obj_dir
 	$(CC) $(FLAGS_CC) -o $(PATH_OBJ)/$@ -c $<
