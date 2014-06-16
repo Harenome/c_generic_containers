@@ -24,9 +24,10 @@ FLAGS_CC_DEBUG = -g
 FLAGS_CC_WARNINGS = -Wall -Wextra -Wfloat-equal -Wdouble-promotion \
 	-Wswitch-default -Winit-self -Wshadow -Wbad-function-cast -Wcast-qual \
 	-Wcast-align -Wconversion -Wlogical-op -Wstrict-prototypes -Wnested-externs
-FLAGS_INCLUDE = -I$(PATH_INCLUDE)
+FLAGS_CC_INCLUDE = -I$(PATH_INCLUDE)
 FLAGS_CC = $(FLAGS_CC_INCLUDE) -std=c99 -pedantic -O0 $(FLAGS_CC_WARNINGS) $(FLAGS_CC_DEBUG)
-FLAGS_CC_LINK =
+FLAGS_CC_LIB = -L$(PATH_LIB)
+FLAGS_CC_LINK = $(FLAGS_CC_LIB) -lcgc
 FLAGS_CC_UNIT_TESTS = -lcunit $(FLAGS_CC_LINK)
 
 ################################################################################
@@ -48,8 +49,18 @@ all : tests
 %.o: %.c | obj_dir
 	$(CC) $(FLAGS_CC) -o $(PATH_OBJ)/$@ -c $<
 
-tests:
-	@echo "TODO."
+## CGC
+cgc/list.o: cgc/list.c cgc/list.h cgc/types.h cgc/common.h
+
+libcgc.a: cgc/list.o | lib_dir
+	ar crvs $(PATH_LIB)/libcgc.a $(PATH_OBJ)/cgc/list.o
+
+## Tests
+test_list.o: test_list.c cgc/list.h
+
+tests: test_list.o libcgc.a | bin_dir
+	$(CC) -o $(PATH_BIN)/test_list $(PATH_OBJ)/test_list.o \
+		$(PATH_OBJ)/cgc/list.o $(FLAGS_CC_LINK)
 
 ################################################################################
 # Directories
@@ -60,6 +71,7 @@ doc: clean_doc
 
 obj_dir:
 	@mkdir -p $(PATH_OBJ)
+	@mkdir -p $(PATH_OBJ)/cgc
 
 lib_dir:
 	@mkdir -p $(PATH_LIB)
