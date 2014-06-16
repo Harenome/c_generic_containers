@@ -52,17 +52,21 @@ all : libcgc.a
 ## CGC
 cgc/list.o: cgc/list.c cgc/list.h cgc/types.h cgc/common.h
 cgc/vector.o: cgc/vector.c cgc/vector.h cgc/types.h cgc/common.h
+cgc/string_vector.o: cgc/string_vector.c cgc/string_vector.h cgc/types.h cgc/common.h
 
-libcgc.a: cgc/list.o cgc/vector.o | lib_dir
-	ar crvs $(PATH_LIB)/libcgc.a $(PATH_OBJ)/cgc/list.o $(PATH_OBJ)/cgc/vector.o
+libcgc.a: cgc/list.o cgc/vector.o cgc/string_vector.o | lib_dir
+	ar crvs $(PATH_LIB)/libcgc.a $(PATH_OBJ)/cgc/list.o $(PATH_OBJ)/cgc/vector.o \
+		$(PATH_OBJ)/cgc/string_vector.o
 
 ## Tests
 test_list.o: test_list.c cgc/list.h
 test_vector.o: test_vector.c cgc/vector.h
+test_string_vector.o: test_string_vector.c cgc/string_vector.h
 
-tests: test_list.o test_vector.o libcgc.a | bin_dir
+tests: test_list.o test_vector.o test_string_vector.o libcgc.a | bin_dir
 	$(CC) -o $(PATH_BIN)/test_list $(PATH_OBJ)/test_list.o $(FLAGS_CC_LINK)
 	$(CC) -o $(PATH_BIN)/test_vector $(PATH_OBJ)/test_vector.o $(FLAGS_CC_LINK)
+	$(CC) -o $(PATH_BIN)/test_string_vector $(PATH_OBJ)/test_string_vector.o $(FLAGS_CC_LINK)
 
 ################################################################################
 # Directories
