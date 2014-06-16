@@ -194,22 +194,22 @@ void cgc_list_map (cgc_list * list, cgc_unary_op_function op_fun)
             op_fun (e->_content);
 }
 
-void cgc_list_fold_left (const cgc_list * list, cgc_binary_op_function op_fun, void * base, void * result)
+void cgc_list_fold_left (const cgc_list * list, cgc_binary_op_left_function op_fun, void * base_result)
 {
     if (! cgc_list_is_empty (list))
     {
-        op_fun (base, list->_first->_content, result);
+        op_fun (base_result, list->_first->_content);
         for (cgc_list_element * e = list->_first->_next; e != NULL; e = e->_next)
-            op_fun (e->_content, result, result);
+            op_fun (base_result, e->_content);
     }
 }
 
-void cgc_list_fold_right (const cgc_list * list, cgc_binary_op_function op_fun, void * base, void * result)
+void cgc_list_fold_right (const cgc_list * list, cgc_binary_op_right_function op_fun, void * base_result)
 {
     if (! cgc_list_is_empty (list))
     {
-        op_fun (base, list->_first->_content, result);
+        op_fun (list->_first->_content, base_result);
         for (cgc_list_element * e = list->_last; e != NULL; e = e->_previous)
-            op_fun (e->_content, base, result);
+            op_fun (e->_content, base_result);
     }
 }

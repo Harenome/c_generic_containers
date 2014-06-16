@@ -163,7 +163,7 @@ void cgc_list_map (cgc_list * list, cgc_unary_op_function op_fun);
  * \param result Result.
  * \relatesalso cgc_list
  */
-void cgc_list_fold_left (const cgc_list * list, cgc_binary_op_function op_fun, void * base, void * result);
+void cgc_list_fold_left (const cgc_list * list, cgc_binary_op_left_function op_fun, void * base_result);
 
 /**
  * \brief Fold right.
@@ -173,6 +173,6 @@ void cgc_list_fold_left (const cgc_list * list, cgc_binary_op_function op_fun, v
  * \param result Result.
  * \relatesalso cgc_list
  */
-void cgc_list_fold_right (const cgc_list * list, cgc_binary_op_function op_fun, void * base, void * result);
+void cgc_list_fold_right (const cgc_list * list, cgc_binary_op_right_function op_fun, void * base_result);
 
 #endif /* _CGC_LIST_H_ */

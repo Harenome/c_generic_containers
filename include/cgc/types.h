@@ -47,6 +47,12 @@ typedef int (* cgc_unary_op_function) (void *);
 /**
  * \bref Binary operation functions.
  */
-typedef int (* cgc_binary_op_function) (const void *, const void *, void *);
+typedef int (* cgc_binary_op_right_function) (const void *, void *);
+
+/**
+ * \bref Binary operation functions.
+ */
+typedef int (* cgc_binary_op_left_function) (void *, const void *);
+
 
 #endif /* _CGC_TYPES_H_ */
