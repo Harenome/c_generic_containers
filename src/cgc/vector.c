@@ -128,7 +128,7 @@ void * cgc_vector_front (cgc_vector * vector)
 
 void * cgc_vector_back (cgc_vector * vector)
 {
-    int back = vector->_size > 0 ? vector->_size - 1 : 0;
+    size_t back = vector->_size > 0 ? vector->_size - 1 : 0;
     return _cgc_vector_address (vector, back);
 }
 
