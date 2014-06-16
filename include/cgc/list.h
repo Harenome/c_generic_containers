@@ -73,7 +73,7 @@ cgc_list * cgc_list_new (cgc_alloc_function alloc_fun, cgc_free_function free_fu
 void cgc_list_free (cgc_list * list);
 
 /**
- * \brief Check whether a CGC list
+ * \brief Check whether a CGC list is empty.
  * \param list List.
  * \retval true if the list is empty.
  * \retval false otherwise.
