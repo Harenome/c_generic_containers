@@ -30,6 +30,13 @@
 #include <stdbool.h>
 #include <errno.h>
 
+/**
+ * \brief Check pointers.
+ * \param pointer Pointer to check.
+ * \retval 0 if the pointer does not point to \c NULL.
+ * \retval -1 otherwise.
+ * \note \c errno will be set to \c EINVAL if \c pointer points to \c NULL.
+ */
 static inline int cgc_check_pointer (void * pointer)
 {
     int error = 0;

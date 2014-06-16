@@ -24,10 +24,29 @@
 #ifndef _CGC_TYPES_H_
 #define _CGC_TYPES_H_
 
+/**
+ * \brief Allocation functions.
+ */
 typedef void * (* cgc_alloc_function) (void);
+
+/**
+ * \brief Free functions.
+ */
 typedef void (* cgc_free_function) (void *);
+
+/**
+ * \brief Copy functions.
+ */
 typedef int (* cgc_copy_function) (const void *, void *);
+
+/**
+ * \brief Unary operation functions.
+ */
 typedef int (* cgc_unary_op_function) (void *);
+
+/**
+ * \bref Binary operation functions.
+ */
 typedef int (* cgc_binary_op_function) (const void *, const void *, void *);
 
 #endif /* _CGC_TYPES_H_ */
