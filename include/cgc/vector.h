@@ -33,6 +33,10 @@
 #include "cgc/common.h"
 #include "cgc/types.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// Typedef.
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * \brief CGC vector
  */
@@ -44,6 +48,10 @@ typedef struct cgc_vector
     size_t _element_size;       /**<- Element size. */
     void * _content;            /**<- Content. */
 } cgc_vector;
+
+////////////////////////////////////////////////////////////////////////////////
+// New, free.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Create a new cgc_vector
@@ -60,6 +68,10 @@ cgc_vector * cgc_vector_new (size_t element_size, size_t size);
  * \relatesalso cgc_vector
  */
 void cgc_vector_free (cgc_vector * vector);
+
+////////////////////////////////////////////////////////////////////////////////
+// Properties getters.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Check whether a CGC vector is empty.
@@ -86,22 +98,9 @@ size_t cgc_vector_size (const cgc_vector * vector);
  */
 size_t cgc_vector_max_size (const cgc_vector * vector);
 
-/**
- * \brief Push back an element.
- * \param vector Vector.
- * \param element Element.
- * \relatesalso cgc_vector
- */
-int cgc_vector_push_back (cgc_vector * vector, void * element);
-
-/**
- * \brief Pop back an element.
- * \param vector Vector.
- * \param element Element.
- * \return element
- * \relatesalso cgc_vector
- */
-void * cgc_vector_pop_back (cgc_vector * vector);
+////////////////////////////////////////////////////////////////////////////////
+// Access.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Get the element at index \c i.
@@ -128,11 +127,76 @@ void * cgc_vector_front (cgc_vector * vector);
  */
 void * cgc_vector_back (cgc_vector * vector);
 
+////////////////////////////////////////////////////////////////////////////////
+// Modifiers.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Push front an element.
+ * \param vector Vector.
+ * \param element Element.
+ * \relatesalso cgc_vector
+ */
+int cgc_vector_push_front (cgc_vector * vector, void * element);
+
+/**
+ * \brief Push back an element.
+ * \param vector Vector.
+ * \param element Element.
+ * \relatesalso cgc_vector
+ */
+int cgc_vector_push_back (cgc_vector * vector, void * element);
+
+/**
+ * \brief Pop front an element.
+ * \param vector Vector.
+ * \param element Element.
+ * \return element
+ * \relatesalso cgc_vector
+ */
+void * cgc_vector_pop_front (cgc_vector * vector);
+
+/**
+ * \brief Pop back an element.
+ * \param vector Vector.
+ * \param element Element.
+ * \return element
+ * \relatesalso cgc_vector
+ */
+void * cgc_vector_pop_back (cgc_vector * vector);
+
+/**
+ * \brief Pop back an element.
+ * \param vector Vector.
+ * \param element Element.
+ * \return element
+ * \relatesalso cgc_vector
+ */
+void * cgc_vector_pop_front (cgc_vector * vector);
+
+/**
+ * \brief Insert an element at index \c i.
+ * \param vector Vector.
+ * \param i Index.
+ * \param element Element.
+ * \relatesalso cgc_vector
+ */
+int cgc_vector_insert (cgc_vector * vector, size_t i, void * element);
+
 /**
  * \brief Clear the vector.
  * \param vector
  * \relatesalso cgc_vector
  */
 void cgc_vector_clear (cgc_vector * vector);
+
+/**
+ * \brief Erase the content from \c start to \c end.
+ * \param vector Vector.
+ * \param start Start.
+ * \param end End.
+ * \relatesalso cgc_vector
+ */
+int cgc_vector_erase (cgc_vector * vector, size_t start, size_t end);
 
 #endif /* _CGC_VECTOR_H_ */

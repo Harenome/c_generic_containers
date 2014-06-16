@@ -7,22 +7,35 @@ int main (int argc, char ** argv)
 {
     (void) argc; (void) argv;
 
-    cgc_vector * vector = cgc_vector_new (sizeof (int), 5);
+    cgc_vector * vector = cgc_vector_new (sizeof (int), 6);
 
-    for (int i = 1; i < 11; ++i)
+    for (int i = 0; i < 10; ++i)
         cgc_vector_push_back (vector, & i);
 
     for (unsigned int i = 0; i < 10; ++i)
     {
         int * at_i = cgc_vector_at (vector, i);
-        printf("%d ", * at_i);
+        printf ("%d ", * at_i);
     }
-    printf("\n");
+    printf ("\n");
 
     int * content = cgc_vector_at (vector, 0);
     for (unsigned int i = 0; i < cgc_vector_size (vector); ++i)
         printf ("%d ", content[i]);
+    printf ("\n");
 
+    int element = 42;
+    cgc_vector_insert (vector, 10, & element);
+    printf ("size: %d; max_size: %d\n", cgc_vector_size (vector), cgc_vector_max_size (vector));
+    content = cgc_vector_at (vector, 0);
+    for (unsigned int i = 0; i < cgc_vector_size (vector); ++i)
+        printf ("%d ", content[i]);
+    printf ("\n");
+
+    cgc_vector_erase (vector, 2, 7);
+    content = cgc_vector_at (vector, 0);
+    for (unsigned int i = 0; i < cgc_vector_size (vector); ++i)
+        printf ("%d ", content[i]);
     cgc_vector_free (vector);
 
     return 0;
