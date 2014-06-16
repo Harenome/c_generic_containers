@@ -51,16 +51,18 @@ all : tests
 
 ## CGC
 cgc/list.o: cgc/list.c cgc/list.h cgc/types.h cgc/common.h
+cgc/vector.o: cgc/vector.c cgc/vector.h cgc/types.h cgc/common.h
 
-libcgc.a: cgc/list.o | lib_dir
-	ar crvs $(PATH_LIB)/libcgc.a $(PATH_OBJ)/cgc/list.o
+libcgc.a: cgc/list.o cgc/vector.o | lib_dir
+	ar crvs $(PATH_LIB)/libcgc.a $(PATH_OBJ)/cgc/list.o $(PATH_OBJ)/cgc/vector.o
 
 ## Tests
 test_list.o: test_list.c cgc/list.h
+test_vector.o: test_vector.c cgc/vector.h
 
-tests: test_list.o libcgc.a | bin_dir
-	$(CC) -o $(PATH_BIN)/test_list $(PATH_OBJ)/test_list.o \
-		$(PATH_OBJ)/cgc/list.o $(FLAGS_CC_LINK)
+tests: test_list.o test_vector.o libcgc.a | bin_dir
+	$(CC) -o $(PATH_BIN)/test_list $(PATH_OBJ)/test_list.o $(FLAGS_CC_LINK)
+	$(CC) -o $(PATH_BIN)/test_vector $(PATH_OBJ)/test_vector.o $(FLAGS_CC_LINK)
 
 ################################################################################
 # Directories
