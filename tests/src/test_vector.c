@@ -26,7 +26,7 @@ int main (int argc, char ** argv)
 
     int element = 42;
     cgc_vector_insert (vector, 10, & element);
-    printf ("size: %d; max_size: %d\n", cgc_vector_size (vector), cgc_vector_max_size (vector));
+    printf ("size: %lu; max_size: %lu\n", cgc_vector_size (vector), cgc_vector_max_size (vector));
     content = cgc_vector_at (vector, 0);
     for (unsigned int i = 0; i < cgc_vector_size (vector); ++i)
         printf ("%d ", content[i]);
