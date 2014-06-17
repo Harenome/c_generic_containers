@@ -33,6 +33,10 @@
 #include "cgc/common.h"
 #include "cgc/types.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// Typedefs.
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * \brief CGC List element.
  */
@@ -55,6 +59,10 @@ typedef struct cgc_list
     cgc_copy_function _copy_fun;        /**<- Copy function. */
 } cgc_list;
 
+////////////////////////////////////////////////////////////////////////////////
+// New, free, copy.
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Create a new cgc_list
  * \param alloc_fun Memory allocation function.
@@ -73,6 +81,18 @@ cgc_list * cgc_list_new (cgc_alloc_function alloc_fun, cgc_free_function free_fu
 void cgc_list_free (cgc_list * list);
 
 /**
+ * \brief Copy a list.
+ * \param list List.
+ * \return copy.
+ * \relatesalsoo cgc_list
+ */
+cgc_list * cgc_list_copy (const cgc_list * list);
+
+////////////////////////////////////////////////////////////////////////////////
+// Properties getters.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
  * \brief Check whether a CGC list is empty.
  * \param list List.
  * \retval true if the list is empty.
@@ -82,22 +102,6 @@ void cgc_list_free (cgc_list * list);
 bool cgc_list_is_empty (const cgc_list * list);
 
 /**
- * \brief Get the front of the list.
- * \param list List.
- * \return Front.
- * \relatesalso cgc_list
- */
-const void * cgc_list_front (const cgc_list * list);
-
-/**
- * \brief Get the back of the list.
- * \param list List.
- * \return Back.
- * \relatesalso cgc_list
- */
-const void * cgc_list_back (const cgc_list * list);
-
-/**
  * \brief Get the size of the list.
  * \param list List.
  * \return size.
@@ -105,21 +109,38 @@ const void * cgc_list_back (const cgc_list * list);
  */
 size_t cgc_list_size (const cgc_list * list);
 
-/**
- * \brief Pop the front.
- * \param list List.
- * \return size.
- * \relatesalso cgc_list
- */
-void * cgc_list_pop_front (cgc_list * list);
+////////////////////////////////////////////////////////////////////////////////
+// Access.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Pop the back.
+ * \brief Get the element at index \c i.
  * \param list List.
- * \return size.
+ * \param i Index.
+ * \return element.
  * \relatesalso cgc_list
  */
-void * cgc_list_pop_back (cgc_list * list);
+void * cgc_list_at (const cgc_list * list, size_t i);
+
+/**
+ * \brief Get the front of the list.
+ * \param list List.
+ * \return Front.
+ * \relatesalso cgc_list
+ */
+void * cgc_list_front (const cgc_list * list);
+
+/**
+ * \brief Get the back of the list.
+ * \param list List.
+ * \return Back.
+ * \relatesalso cgc_list
+ */
+void * cgc_list_back (const cgc_list * list);
+
+////////////////////////////////////////////////////////////////////////////////
+// Modifiers.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Push to the front.
@@ -140,12 +161,30 @@ int cgc_list_push_front (cgc_list * list, void * element);
 int cgc_list_push_back (cgc_list * list, void * element);
 
 /**
- * \brief Copy a list.
+ * \brief Pop the front.
  * \param list List.
- * \return copy.
- * \relatesalsoo cgc_list
+ * \return size.
+ * \relatesalso cgc_list
  */
-cgc_list * cgc_list_copy (const cgc_list * list);
+void * cgc_list_pop_front (cgc_list * list);
+
+/**
+ * \brief Pop the back.
+ * \param list List.
+ * \return size.
+ * \relatesalso cgc_list
+ */
+void * cgc_list_pop_back (cgc_list * list);
+
+int cgc_list_insert (cgc_list * list, size_t i, void * element);
+
+void cgc_list_clear (cgc_list * list);
+
+int cgc_list_erase (cgc_list * list, size_t start, size_t end);
+
+////////////////////////////////////////////////////////////////////////////////
+// Functions on lists.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Map.

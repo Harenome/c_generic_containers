@@ -23,6 +23,10 @@
  */
 #include "cgc/list.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// New, free, copy.
+////////////////////////////////////////////////////////////////////////////////
+
 cgc_list * cgc_list_new (cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun)
 {
     cgc_list * list = malloc (sizeof * list);
@@ -44,31 +48,27 @@ void cgc_list_free (cgc_list * list)
 {
     if (list != NULL)
     {
-        cgc_list_element * current = list->_first;
-        while (current != NULL)
-        {
-            cgc_list_element * next = current->_next;
-            list->_free_fun (current->_content);
-            free (current);
-            current = next;
-        }
+        cgc_list_clear (list);
         free (list);
     }
 }
 
+cgc_list * cgc_list_copy (const cgc_list * list)
+{
+    cgc_list * copy = cgc_list_new (list->_alloc_fun, list->_free_fun, list->_copy_fun);
+    if (! cgc_list_is_empty (list))
+        for (cgc_list_element * e = list->_first; e != NULL; e = e->_next)
+            cgc_list_push_back (copy, e->_content);
+    return copy;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Properties getters.
+////////////////////////////////////////////////////////////////////////////////
+
 bool cgc_list_is_empty (const cgc_list * list)
 {
     return list->_first == NULL;
-}
-
-const void * cgc_list_front (const cgc_list * list)
-{
-    return list->_first->_content;
-}
-
-const void * cgc_list_back (const cgc_list * list)
-{
-    return list->_last->_content;
 }
 
 size_t cgc_list_size (const cgc_list * list)
@@ -80,31 +80,32 @@ size_t cgc_list_size (const cgc_list * list)
     return size;
 }
 
-void * cgc_list_pop_front (cgc_list * list)
+////////////////////////////////////////////////////////////////////////////////
+// Access.
+////////////////////////////////////////////////////////////////////////////////
+
+void * cgc_list_at (const cgc_list * list, size_t i)
 {
-    void * content = list->_first->_content;
-
-    cgc_list_element * new_first = list->_first->_next;
-    if (new_first != NULL)
-        new_first->_previous = NULL;
-    free (list->_first);
-    list->_first = new_first;
-
-    return content;
+    size_t j = 0;
+    cgc_list_element * e;
+    for (e = list->_first; j < i && e != NULL; e = e->_next)
+        j++;
+    return e == NULL ? NULL : e->_content;
 }
 
-void * cgc_list_pop_back (cgc_list * list)
+void * cgc_list_front (const cgc_list * list)
 {
-    void * content = list->_last->_content;
-
-    cgc_list_element * new_last = list->_last->_previous;
-    if (new_last != NULL)
-        new_last->_next = NULL;
-    free (list->_last);
-    list->_last = new_last;
-
-    return content;
+    return list->_first->_content;
 }
+
+void * cgc_list_back (const cgc_list * list)
+{
+    return list->_last->_content;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Modifiers.
+////////////////////////////////////////////////////////////////////////////////
 
 static cgc_list_element * _cgc_list_element_alloc (void)
 {
@@ -178,14 +179,103 @@ int cgc_list_push_back (cgc_list * list, void * content)
     return error;
 }
 
-cgc_list * cgc_list_copy (const cgc_list * list)
+void * cgc_list_pop_front (cgc_list * list)
 {
-    cgc_list * copy = cgc_list_new (list->_alloc_fun, list->_free_fun, list->_copy_fun);
-    if (! cgc_list_is_empty (list))
-        for (cgc_list_element * e = list->_first; e != NULL; e = e->_next)
-            cgc_list_push_back (copy, e->_content);
-    return copy;
+    void * content = list->_first->_content;
+
+    cgc_list_element * new_first = list->_first->_next;
+    if (new_first != NULL)
+        new_first->_previous = NULL;
+    free (list->_first);
+    list->_first = new_first;
+
+    return content;
 }
+
+void * cgc_list_pop_back (cgc_list * list)
+{
+    void * content = list->_last->_content;
+
+    cgc_list_element * new_last = list->_last->_previous;
+    if (new_last != NULL)
+        new_last->_next = NULL;
+    free (list->_last);
+    list->_last = new_last;
+
+    return content;
+}
+
+int cgc_list_insert (cgc_list * list, size_t i, void * element)
+{
+    if (i == 0)
+        cgc_list_push_front (list, element);
+    else
+    {
+        cgc_list_element * new_element = _cgc_list_element_alloc ();
+        _cgc_list_copy_content (list, new_element, element);
+
+        size_t j = i;
+        cgc_list_element * e = list->_first;
+        for (e = list->_first; j != 0 && e->_next != NULL; --j)
+            e = e->_next;
+
+        new_element->_next = e;
+        new_element->_previous = e->_previous;
+        e->_previous = new_element;
+        if (e->_next == NULL)
+            list->_last = new_element;
+    }
+
+    return 0;
+}
+
+void cgc_list_clear (cgc_list * list)
+{
+    if (list != NULL)
+    {
+        cgc_list_element * current = list->_first;
+        while (current != NULL)
+        {
+            cgc_list_element * next = current->_next;
+            list->_free_fun (current->_content);
+            free (current);
+            current = next;
+        }
+        list->_first = NULL;
+        list->_last = NULL;
+    }
+}
+
+int cgc_list_erase (cgc_list * list, size_t start, size_t end)
+{
+    size_t current_index = 0;
+    cgc_list_element * current = list->_first;
+    cgc_list_element * before_start = NULL;
+    while (current != NULL && current_index != start)
+    {
+        current = current->_next;
+        current_index++;
+    }
+
+    before_start = current->_previous;
+
+    while (current_index != end && current != NULL)
+    {
+        cgc_list_element * next = current->_next;
+        list->_free_fun (current->_content);
+        free (current);
+        current = next;
+    }
+
+    before_start->_next = current;
+    list->_last = current;
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Functions on lists.
+////////////////////////////////////////////////////////////////////////////////
 
 void cgc_list_map (cgc_list * list, cgc_unary_op_function op_fun)
 {
