@@ -209,21 +209,25 @@ int cgc_list_insert (cgc_list * list, size_t i, void * element)
 {
     if (i == 0)
         cgc_list_push_front (list, element);
-    else
+        else
     {
-        cgc_list_element * new_element = _cgc_list_element_alloc ();
-        _cgc_list_copy_content (list, new_element, element);
-
-        size_t j = i;
+        size_t j = 0;
         cgc_list_element * e = list->_first;
-        for (e = list->_first; j != 0 && e->_next != NULL; --j)
+        for (e = list->_first; j != i && e->_next != NULL; ++j)
             e = e->_next;
 
-        new_element->_next = e;
-        new_element->_previous = e->_previous;
-        e->_previous = new_element;
-        if (e->_next == NULL)
-            list->_last = new_element;
+        if (j == i)
+        {
+            cgc_list_element * new_element = _cgc_list_element_alloc ();
+            _cgc_list_copy_content (list, new_element, element);
+            cgc_list_element * previous = e->_previous;
+            new_element->_previous = previous;
+            previous->_next = new_element;
+            new_element->_next = e;
+            e->_previous = new_element;
+        }
+        else
+            cgc_list_push_back (list, element);
     }
 
     return 0;
@@ -265,10 +269,12 @@ int cgc_list_erase (cgc_list * list, size_t start, size_t end)
         list->_free_fun (current->_content);
         free (current);
         current = next;
+        current_index++;
     }
 
     before_start->_next = current;
-    list->_last = current;
+    if (current == NULL)
+        list->_last = NULL;
 
     return 0;
 }

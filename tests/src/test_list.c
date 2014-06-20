@@ -87,6 +87,13 @@ int main (int argc, char ** argv)
     fold_left_diff ("list_1", lists[1]);
     fold_right_diff ("list_1", lists[1]);
 
+    cgc_list_erase (lists[0], 1, 4);
+    print_int_list ("list_0", lists[0]);
+
+    int i = 42;
+    cgc_list_insert (lists[0], 2, & i);
+    print_int_list ("list_0", lists[0]);
+
     free (popped_int);
     cgc_list_free (lists[0]);
     cgc_list_free (lists[1]);
