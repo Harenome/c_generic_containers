@@ -57,6 +57,7 @@ typedef struct cgc_list
     cgc_alloc_function _alloc_fun;      /**<- Allocation function. */
     cgc_free_function _free_fun;        /**<- Free function. */
     cgc_copy_function _copy_fun;        /**<- Copy function. */
+    size_t _size;                       /**<- Size. */
 } cgc_list;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +88,8 @@ void cgc_list_free (cgc_list * list);
  * \relatesalsoo cgc_list
  */
 cgc_list * cgc_list_copy (const cgc_list * list);
+
+int cgc_list_init (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
@@ -178,7 +181,7 @@ void * cgc_list_pop_back (cgc_list * list);
 
 int cgc_list_insert (cgc_list * list, size_t i, void * element);
 
-void cgc_list_clear (cgc_list * list);
+int cgc_list_clear (cgc_list * list);
 
 int cgc_list_erase (cgc_list * list, size_t start, size_t end);
 

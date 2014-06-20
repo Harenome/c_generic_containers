@@ -31,15 +31,7 @@ cgc_list * cgc_list_new (cgc_alloc_function alloc_fun, cgc_free_function free_fu
 {
     cgc_list * list = malloc (sizeof * list);
     if (list != NULL)
-    {
-        * list = (cgc_list) {
-            ._first = NULL,
-            ._last = NULL,
-            ._alloc_fun = alloc_fun,
-            ._free_fun = free_fun,
-            ._copy_fun = copy_fun,
-        };
-    }
+        cgc_list_init (list, alloc_fun, free_fun, copy_fun);
 
     return list;
 }
@@ -62,6 +54,38 @@ cgc_list * cgc_list_copy (const cgc_list * list)
     return copy;
 }
 
+static inline int _cgc_list_init_check_pointers (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun)
+{
+     int error = cgc_check_pointer (list);
+    if (! error && (alloc_fun == NULL || free_fun == NULL || copy_fun == NULL))
+    {
+        error = -1;
+        errno = EINVAL;
+    }
+
+    return error;
+}
+
+static inline void _cgc_list_init_actual_init (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun)
+{
+    list->_first = NULL;
+    list->_last = NULL;
+    list->_alloc_fun = alloc_fun;
+    list->_free_fun = free_fun;
+    list->_copy_fun = copy_fun;
+    list->_size = 0;
+}
+
+int cgc_list_init (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun)
+{
+    int error = _cgc_list_init_check_pointers (list, alloc_fun, free_fun, copy_fun);
+
+    if (! error)
+        _cgc_list_init_actual_init (list, alloc_fun, free_fun, copy_fun);
+
+    return error;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,11 +97,7 @@ bool cgc_list_is_empty (const cgc_list * list)
 
 size_t cgc_list_size (const cgc_list * list)
 {
-    size_t size = 0;
-    if (list != NULL)
-        for (cgc_list_element * e = list->_first; e != NULL; e = e->_next)
-            ++size;
-    return size;
+    return list->_size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,10 +155,10 @@ static int _cgc_list_push_prelude (cgc_list * list, void * content, cgc_list_ele
         error = cgc_check_pointer (content);
 
     if (! error)
+    {
         * e = _cgc_list_element_alloc ();
-
-    if (! error)
         error = e != NULL ? _cgc_list_copy_content (list, * e, content) : -2;
+    }
 
     return error;
 }
@@ -146,7 +166,7 @@ static int _cgc_list_push_prelude (cgc_list * list, void * content, cgc_list_ele
 int cgc_list_push_front (cgc_list * list, void * content)
 {
     cgc_list_element * e = NULL;
-    int error = _cgc_list_push_prelude (list, content, &e);
+    int error = _cgc_list_push_prelude (list, content, & e);
 
     if (! error)
     {
@@ -156,6 +176,7 @@ int cgc_list_push_front (cgc_list * list, void * content)
         list->_first = e;
         if (list->_last == NULL)
             list->_last = e;
+        list->_size++;
     }
 
     return error;
@@ -164,7 +185,7 @@ int cgc_list_push_front (cgc_list * list, void * content)
 int cgc_list_push_back (cgc_list * list, void * content)
 {
     cgc_list_element * e = NULL;
-    int error = _cgc_list_push_prelude (list, content, &e);
+    int error = _cgc_list_push_prelude (list, content, & e);
 
     if (! error)
     {
@@ -174,6 +195,7 @@ int cgc_list_push_back (cgc_list * list, void * content)
         list->_last = e;
         if (list->_first == NULL)
             list->_first = e;
+        list->_size++;
     }
 
     return error;
@@ -188,6 +210,7 @@ void * cgc_list_pop_front (cgc_list * list)
         new_first->_previous = NULL;
     free (list->_first);
     list->_first = new_first;
+    list->_size--;
 
     return content;
 }
@@ -201,82 +224,90 @@ void * cgc_list_pop_back (cgc_list * list)
         new_last->_next = NULL;
     free (list->_last);
     list->_last = new_last;
+    list->_size--;
 
     return content;
 }
 
-int cgc_list_insert (cgc_list * list, size_t i, void * element)
+static inline cgc_list_element * _cgc_list_element_at (cgc_list * list, size_t i)
 {
-    if (i == 0)
-        cgc_list_push_front (list, element);
-        else
-    {
-        size_t j = 0;
-        cgc_list_element * e = list->_first;
-        for (e = list->_first; j != i && e->_next != NULL; ++j)
-            e = e->_next;
+    size_t j = 0;
+    cgc_list_element * e = list->_first;
+    for (e = list->_first; j != i && e->_next != NULL; ++j)
+        e = e->_next;
 
-        if (j == i)
-        {
-            cgc_list_element * new_element = _cgc_list_element_alloc ();
-            _cgc_list_copy_content (list, new_element, element);
-            cgc_list_element * previous = e->_previous;
-            new_element->_previous = previous;
-            previous->_next = new_element;
-            new_element->_next = e;
-            e->_previous = new_element;
-        }
-        else
-            cgc_list_push_back (list, element);
-    }
-
-    return 0;
+    return e;
 }
 
-void cgc_list_clear (cgc_list * list)
+int cgc_list_insert (cgc_list * list, size_t i, void * element)
 {
-    if (list != NULL)
+    int error = 0;
+    if (i == 0 || cgc_list_is_empty (list))
+        error = cgc_list_push_front (list, element);
+    else if (i >= cgc_list_size (list))
+        error = cgc_list_push_back (list, element);
+    else
     {
-        cgc_list_element * current = list->_first;
-        while (current != NULL)
-        {
-            cgc_list_element * next = current->_next;
-            list->_free_fun (current->_content);
-            free (current);
-            current = next;
-        }
-        list->_first = NULL;
-        list->_last = NULL;
+        cgc_list_element * e = _cgc_list_element_at (list, i);
+
+        cgc_list_element * new_element = _cgc_list_element_alloc ();
+        _cgc_list_copy_content (list, new_element, element);
+        cgc_list_element * previous = e->_previous;
+        new_element->_previous = previous;
+        previous->_next = new_element;
+        new_element->_next = e;
+        e->_previous = new_element;
+        list->_size++;
     }
+
+    return error;
+}
+
+int cgc_list_clear (cgc_list * list)
+{
+    return cgc_list_erase (list, 0, cgc_list_size (list));
+}
+
+static inline cgc_list_element * _cgc_list_erase_until (cgc_list * list, cgc_list_element * e, size_t i)
+{
+    size_t j = 0;
+    for (e = e; j != i && e != NULL; j++)
+    {
+        cgc_list_element * next = e->_next;
+        list->_free_fun (e->_content);
+        free (e);
+        e = next;
+    }
+
+    return e;
 }
 
 int cgc_list_erase (cgc_list * list, size_t start, size_t end)
 {
-    size_t current_index = 0;
-    cgc_list_element * current = list->_first;
-    cgc_list_element * before_start = NULL;
-    while (current != NULL && current_index != start)
+    int error = cgc_check_pointer (list);
+    if (! error)
     {
-        current = current->_next;
-        current_index++;
+        cgc_list_element * current = _cgc_list_element_at (list, start);
+
+        cgc_list_element * before_start = NULL;
+        if (current != NULL)
+            before_start = current->_previous;
+
+        current = _cgc_list_erase_until (list, current, end - start);
+
+        if (before_start == NULL)
+            list->_first = before_start;
+        else
+            before_start->_next = current;
+
+        if (current == NULL)
+            list->_last = NULL;
+
+        size_t deleted = end >= list->_size ? start : end - start;
+        list->_size -= list->_size - deleted;
     }
 
-    before_start = current->_previous;
-
-    while (current_index != end && current != NULL)
-    {
-        cgc_list_element * next = current->_next;
-        list->_free_fun (current->_content);
-        free (current);
-        current = next;
-        current_index++;
-    }
-
-    before_start->_next = current;
-    if (current == NULL)
-        list->_last = NULL;
-
-    return 0;
+    return error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
