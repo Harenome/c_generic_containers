@@ -89,7 +89,21 @@ void cgc_list_free (cgc_list * list);
  */
 cgc_list * cgc_list_copy (const cgc_list * list);
 
+/**
+ * \brief Initialize a cgc_list.
+ * \param list List.
+ * \param alloc_fun Memory allocation function.
+ * \param free_fun Free function.
+ * \param copy_fun Copy function.
+ * \relatesalso cgc_list
+ */
 int cgc_list_init (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun);
+
+/**
+ * \brief Clean a cgc_list.
+ * \param list List.
+ */
+int cgc_list_clean (cgc_list * list);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
