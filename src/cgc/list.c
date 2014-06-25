@@ -56,7 +56,7 @@ cgc_list * cgc_list_copy (const cgc_list * list)
 
 static inline int _cgc_list_init_check_pointers (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun)
 {
-     int error = cgc_check_pointer (list);
+    int error = cgc_check_pointer (list);
     if (! error && (alloc_fun == NULL || free_fun == NULL || copy_fun == NULL))
     {
         error = -1;
@@ -237,7 +237,7 @@ void * cgc_list_pop_back (cgc_list * list)
 static inline cgc_list_element * _cgc_list_element_at (cgc_list * list, size_t i)
 {
     size_t j = 0;
-    cgc_list_element * e = list->_first;
+    cgc_list_element * e;
     for (e = list->_first; j != i && e->_next != NULL; ++j)
         e = e->_next;
 
@@ -253,16 +253,19 @@ int cgc_list_insert (cgc_list * list, size_t i, void * element)
         error = cgc_list_push_back (list, element);
     else
     {
-        cgc_list_element * e = _cgc_list_element_at (list, i);
+        cgc_list_element * new_e = _cgc_list_element_alloc ();
+        error = new_e != NULL ? _cgc_list_copy_content (list, new_e, element) : -2;
 
-        cgc_list_element * new_element = _cgc_list_element_alloc ();
-        _cgc_list_copy_content (list, new_element, element);
-        cgc_list_element * previous = e->_previous;
-        new_element->_previous = previous;
-        previous->_next = new_element;
-        new_element->_next = e;
-        e->_previous = new_element;
-        list->_size++;
+        if (! error)
+        {
+            cgc_list_element * target = _cgc_list_element_at (list, i);
+            cgc_list_element * previous = target->_previous;
+            new_e->_previous = previous;
+            previous->_next = new_e;
+            new_e->_next = target;
+            target->_previous = new_e;
+            list->_size++;
+        }
     }
 
     return error;
