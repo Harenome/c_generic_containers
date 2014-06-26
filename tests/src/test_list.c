@@ -49,7 +49,7 @@ static inline void print_int_list (const char * list_name, cgc_list * list)
 {
     printf ("%s: [ ", list_name);
     cgc_list_map (list, int_print);
-    printf ("]\n");
+    printf ("], size %lu\n", cgc_list_size (list));
 }
 
 static inline void fold_left_diff (const char * list_name, const cgc_list * list)
@@ -86,6 +86,13 @@ int main (int argc, char ** argv)
     fold_right_diff ("list_0", lists[0]);
     fold_left_diff ("list_1", lists[1]);
     fold_right_diff ("list_1", lists[1]);
+
+    cgc_list_erase (lists[0], 0, 20);
+    print_int_list ("list_0", lists[0]);
+
+    int i = 42;
+    cgc_list_insert (lists[0], 20, & i);
+    print_int_list ("list_0", lists[0]);
 
     free (popped_int);
     cgc_list_free (lists[0]);
