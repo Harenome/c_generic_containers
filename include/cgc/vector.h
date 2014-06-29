@@ -42,11 +42,13 @@
  */
 typedef struct cgc_vector
 {
-    size_t _size;               /**<- Size. */
-    size_t _max_size;           /**<- Max size. */
-    size_t _size_step;          /**<- Size step. */
-    size_t _element_size;       /**<- Element size. */
-    void * _content;            /**<- Content. */
+    size_t _size;                   /**<- Size. */
+    size_t _max_size;               /**<- Max size. */
+    size_t _size_step;              /**<- Size step. */
+    size_t _element_size;           /**<- Element size. */
+    void * _content;                /**<- Content. */
+    cgc_copy_function _copy_fun;    /**<- Copy function. */
+    cgc_clean_function _clean_fun;  /**<- Clean function. */
 } cgc_vector;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +62,7 @@ typedef struct cgc_vector
  * \relatesalso cgc_vector
  * \return pointer to a cgc_vector.
  */
-cgc_vector * cgc_vector_new (size_t element_size, size_t size);
+cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function cop_fun, cgc_clean_function clean_fun, size_t size);
 
 /**
  * \brief Free a cgc_vector.
@@ -188,7 +190,7 @@ int cgc_vector_insert (cgc_vector * vector, size_t i, void * element);
  * \param vector
  * \relatesalso cgc_vector
  */
-void cgc_vector_clear (cgc_vector * vector);
+int cgc_vector_clear (cgc_vector * vector);
 
 /**
  * \brief Erase the content from \c start to \c end.

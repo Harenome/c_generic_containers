@@ -3,24 +3,6 @@
 
 #include <cgc/list.h>
 
-static void * int_alloc (void)
-{
-    return malloc (sizeof (int));
-}
-
-static int int_copy (const void * source, void * destination)
-{
-    const int * s = source;
-    int * d = destination;
-    * d = * s;
-    return 0;
-}
-
-static void int_free (void * i)
-{
-    free (i);
-}
-
 static int int_print (void * i)
 {
     int * integer = i;
@@ -73,7 +55,7 @@ int main (int argc, char ** argv)
 
     cgc_list * lists[2];
 
-    lists[0] = cgc_list_new (int_alloc, int_free, int_copy);
+    lists[0] = cgc_list_new (sizeof (int), NULL, NULL);
     for (int i = 0; i < 10; ++i)
         cgc_list_push_back (lists[0], & i);
     lists[1] = cgc_list_copy (lists[0]);

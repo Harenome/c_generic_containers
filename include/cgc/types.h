@@ -25,14 +25,9 @@
 #define _CGC_TYPES_H_
 
 /**
- * \brief Allocation functions.
- */
-typedef void * (* cgc_alloc_function) (void);
-
-/**
  * \brief Free functions.
  */
-typedef void (* cgc_free_function) (void *);
+typedef void (* cgc_clean_function) (void *);
 
 /**
  * \brief Copy functions.

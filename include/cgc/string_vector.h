@@ -175,7 +175,7 @@ int cgc_string_vector_insert (cgc_string_vector * vector, size_t i, const char *
  * \param vector
  * \relatesalso cgc_string_vector
  */
-void cgc_string_vector_clear (cgc_string_vector * vector);
+int cgc_string_vector_clear (cgc_string_vector * vector);
 
 /**
  * \brief Erase the content from \c start to \c end.

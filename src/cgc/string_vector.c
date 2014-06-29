@@ -31,13 +31,19 @@ static inline char * _cgc_strdup (const char * string)
     return copy;
 }
 
+static void _cgc_str_clean (void * content)
+{
+    char ** element = content;
+    free (* element);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // New, free.
 ////////////////////////////////////////////////////////////////////////////////
 
 cgc_string_vector * cgc_string_vector_new (size_t size)
 {
-    return cgc_vector_new (sizeof (char **), size);
+    return cgc_vector_new (sizeof (char **), NULL, _cgc_str_clean, size);
 }
 
 void cgc_string_vector_free (cgc_string_vector * vector)
@@ -125,25 +131,12 @@ int cgc_string_vector_insert (cgc_string_vector * vector, size_t i, const char *
     return cgc_vector_insert (vector, i, & copy);
 }
 
-void cgc_string_vector_clear (cgc_string_vector * vector)
+int cgc_string_vector_clear (cgc_string_vector * vector)
 {
-    size_t size = cgc_string_vector_size (vector);
-    for (size_t i = 0; i < size; ++i)
-    {
-        char * element = cgc_string_vector_at (vector, i);
-        free (element);
-    }
-    cgc_vector_clear (vector);
+    return cgc_vector_clear (vector);
 }
 
 int cgc_string_vector_erase (cgc_string_vector * vector, size_t start, size_t end)
 {
-    size_t vector_size = cgc_string_vector_size (vector);
-    size_t max_index = vector_size < end ? vector_size : end;
-    for (size_t i = start; i < max_index; ++i)
-    {
-        char * element = cgc_string_vector_at (vector, i);
-        free (element);
-    }
     return cgc_vector_erase (vector, start, end);
 }

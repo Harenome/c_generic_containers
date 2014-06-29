@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <sysexits.h>
+#include <string.h>
 
 #include "cgc/common.h"
 #include "cgc/types.h"
@@ -54,7 +55,7 @@ typedef struct cgc_list_element
 /**
  * \brief CGC List.
  *
- * CGC Lists are generic lists. These lists are implemented as doubly linked 
+ * CGC Lists are generic lists. These lists are implemented as doubly linked
  * lists.
  *
  * # Basics
@@ -223,10 +224,10 @@ typedef struct cgc_list
 {
     cgc_list_element * _first;          /**<- First element. */
     cgc_list_element * _last;           /**<- Last element. */
-    cgc_alloc_function _alloc_fun;      /**<- Allocation function. */
-    cgc_free_function _free_fun;        /**<- Free function. */
+    cgc_clean_function _clean_fun;      /**<- Clean function. */
     cgc_copy_function _copy_fun;        /**<- Copy function. */
     size_t _size;                       /**<- Size. */
+    size_t _element_size;               /**<- Element size. */
 } cgc_list;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -243,7 +244,7 @@ typedef struct cgc_list
  * \retval NULL if the list could not be allocated.
  * \note Lists obtained this way must be freed using cgc_list_free().
  */
-cgc_list * cgc_list_new (cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun);
+cgc_list * cgc_list_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun);
 
 /**
  * \brief Free a cgc_list.
@@ -274,7 +275,7 @@ cgc_list * cgc_list_copy (const cgc_list * list);
  * \retval 0 in case of success.
  * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
  */
-int cgc_list_init (cgc_list * list, cgc_alloc_function alloc_fun, cgc_free_function free_fun, cgc_copy_function copy_fun);
+int cgc_list_init (cgc_list * list, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun);
 
 /**
  * \brief Clean a cgc_list.
