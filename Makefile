@@ -63,10 +63,16 @@ test_list.o: test_list.c cgc/list.h
 test_vector.o: test_vector.c cgc/vector.h
 test_string_vector.o: test_string_vector.c cgc/string_vector.h
 
-tests: test_list.o test_vector.o test_string_vector.o libcgc.a | bin_dir
+test_list: test_list.o libcgc.a | bin_dir
 	$(CC) -o $(PATH_BIN)/test_list $(PATH_OBJ)/test_list.o $(FLAGS_CC_LINK)
+
+test_vector: test_vector.o libcgc.a  | bin_dir
 	$(CC) -o $(PATH_BIN)/test_vector $(PATH_OBJ)/test_vector.o $(FLAGS_CC_LINK)
+
+test_string_vector: test_string_vector.o libcgc.a | bin_dir
 	$(CC) -o $(PATH_BIN)/test_string_vector $(PATH_OBJ)/test_string_vector.o $(FLAGS_CC_LINK)
+
+tests: test_list test_vector test_string_vector libcgc.a | bin_dir
 
 ################################################################################
 # Directories
