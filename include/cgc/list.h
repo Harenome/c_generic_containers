@@ -59,39 +59,21 @@ typedef struct cgc_list_element
  * lists.
  *
  * # Basics
- * To achieve genericity, CGC Lists rely on the use of 3 functions:
- * - a memory allocation function
- * - a free function
+ * To achieve genericity, CGC Lists rely on 3 things:
+ * - the size in bytes of the elements
  * - a copy function
- * It is up to the user to properly write these 3 functions in order to create
+ * - a cleaning function
+ * It is up to the user to properly write these 2 functions in order to create
  * a valid CGC List.
  *
- * ## Allocation function
- * A proper allocation function is required to allocate the memory which will be
- * used to store the elements of the list.
- *
- * ### Prototype
- * The prototype of this function must be:
- *
- *      void * alloc_function (void);
- *
- * It shall return a pointer to memory wide enough to hold whatever the user
- * wishes to store as an element of the list.
- *
- * ## Free function
- * A dedicated free function is required since the CGC List aims to be generic:
- * users should be able to store any type of element in the list. Elements could
- * themselves point to dynamically allocated memory. Thus, this function shall,
- * if needed, free any memory an element of the list could supposedly hold, and
- * then free the element itself.
- * ### Prototype
- * The prototype of this function must be:
- *
- *      void free_function (void *);
+ * ## Element allocation
+ * CGC Lists will dynamically allocate memory for its elements. This allocation
+ * depends on the size provided at the list creation.
  *
  * ## Copy function
- * Since the CGC List could possibly hold any type of element, the user must
- * supply a way to properly copy elements into the list.
+ * Since the CGC List could possibly hold any type of element, it might be
+ * necessary to supply a way to properly copy elements into the list.
+
  * ### Prototype
  * The prototype of this function must be:
  *
@@ -101,15 +83,81 @@ typedef struct cgc_list_element
  * destination (the copy).
  * This function shall assume the memory for the copy has already been allocated.
  *
+ * ### When and how to define such functions
+ * A copy function should be provided for elements which could hold pointers.
+ * If a list is destined to store simple elements, it won't require a copy
+ * function.
+ *
+ * ## Cleaning function
+ * A cleaning function may be required since the CGC List aims to be generic:
+ * users should be able to store any type of element in the list. Elements could
+ * themselves point to dynamically allocated memory. Thus, this function shall,
+ * if needed, free any memory an element of the list could supposedly hold.
+ *
+ * Note that the function should free any dynamically allocated memory held by
+ * the list element but should not free the element.
+ *
+ * ### Prototype
+ * The prototype of this function must be:
+ *
+ *      void clean_function (void *);
+ *
  * # CGC List creation and destruction
  * ## Dynamic allocation
  * CGC Lists can be dynamically created using cgc_list_new(). Such lists must be
  * destroyed using cgc_list_free().
- * For instance:
  *
- *      cgc_list * list = cgc_list_new (alloc_fun, free_fun, copy_fun);
+ * ### Simple example
+ * One can create a list of integers as follows:
+ *
+ *      cgc_list * list = cgc_list_new (sizeof (int), NULL, NULL);
  *      // Use the list.
  *      cgc_list_free (list);
+ *
+ * Simple structs can also be stored in a list:
+ *
+ *     // Struct definition
+ *     struct my_struct
+ *     {
+ *         int _first_field;
+ *         int _second_field;
+ *     };
+ *
+ *     // Somewhere else:
+ *     cgc_list * list = cgc_list_new (sizeof (struct my_struct), NULL, NULL);
+ *     // Use the list.
+ *     cgc_list_free (list);
+ *
+ * ### Complex example
+ * Sometimes, the element holds dynamically allocated memory.
+ *
+ *     // Struct definition
+ *     struct my_struct
+ *     {
+ *         int _static;
+ *         int * _dynamic;
+ *     };
+ *
+ *     int my_struct_copy (const void * source, void * destination)
+ *     {
+ *         my_struct * s = source;
+ *         my_struct * d = destination;
+ *         * d = * s;
+ *         // The struct was copied...but it is the address of _dynamic that was copied !
+ *         * d->_dynamic = s->_dynamic;
+ *         return 0;
+ *     }
+ *
+ *     void my_struct_clean (void * pointer)
+ *     {
+ *         struct my_struct * my_s = pointer;
+ *         free (my_s->_field);
+ *     }
+ *
+ *     // Somewhere else:
+ *     cgc_list * list = cgc_list_new (sizeof (struct my_struct), my_struct_copy, my_struct_clean);
+ *     // Use the list.
+ *     cgc_list_free (list);
  *
  * ## Static allocation
  * CGC Lists can also be statically declared. In such cases, one must initialize
@@ -117,7 +165,7 @@ typedef struct cgc_list_element
  * For instance:
  *
  *      cgc_list list;
- *      cgc_list_init (& list, alloc_fun, free_fun, copy_fun);
+ *      cgc_list_init (& list, sizeof (int), copy_fun, clean_fun);
  *      // Use the list.
  *      cgc_list_clean (& list);
  *
@@ -156,8 +204,9 @@ typedef struct cgc_list_element
  *
  * ## While modifying the list
  * It is also possible to get an element while modifying the list: the first
- * or the last element can be accessed while removing it from the list. Elements
- * accessed in this fashion shall be freed by the user.
+ * or the last element can be accessed while removing it from the list.
+ *
+ * Important: Elements accessed in this fashion shall be freed by the user.
  *
  * Access function      | Element
  * ---------------------|---------------
@@ -189,8 +238,8 @@ typedef struct cgc_list_element
  *
  * # Operations on lists
  * Those familiar with functionnal programming will probably be happy to know
- * that the map and fold functions are available. However, do not expect perfect
- * reproduction of their functionnal programming counterparts.
+ * that the \c map and \c fold functions are available. However, do not expect
+ * perfect reproduction of their functionnal programming counterparts.
  *
  * ## Map
  * The map function for CGC Lists is cgc_list_map(). It expects a list, and an
@@ -214,7 +263,7 @@ typedef struct cgc_list_element
  * operation and an initial value. The prototypes of the binary operations are:
  *
  *      int fold_right_operation (const void *, void *);
- *      int fold_left_operation (const void *, void *);
+ *      int fold_left_operation (void *, const void *);
  *
  * These operations directly modify one of their argument. Thus the initial
  * value supplied to the fold function is likely to be modified and will hold
@@ -236,9 +285,9 @@ typedef struct cgc_list
 
 /**
  * \brief Create a new cgc_list
- * \param alloc_fun Memory allocation function.
- * \param free_fun Free function.
+ * \param element_size Element size
  * \param copy_fun Copy function.
+ * \param clean_fun Cleaning function.
  * \relatesalso cgc_list
  * \return pointer to a cgc_list.
  * \retval NULL if the list could not be allocated.
@@ -265,15 +314,16 @@ cgc_list * cgc_list_copy (const cgc_list * list);
 
 /**
  * \brief Initialize a cgc_list.
- * \param list List.
- * \param alloc_fun Memory allocation function.
- * \param free_fun Free function.
- * \param copy_fun Copy function.
+ * \param[in,out] list List.
+ * \param[in] element_size Element size
+ * \param[in] copy_fun Copy function.
+ * \param[in] clean_fun Cleaning function.
  * \relatesalso cgc_list
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
  */
 int cgc_list_init (cgc_list * list, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun);
 
@@ -283,7 +333,8 @@ int cgc_list_init (cgc_list * list, size_t element_size, cgc_copy_function copy_
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
  */
 int cgc_list_clean (cgc_list * list);
 
@@ -349,10 +400,11 @@ void * cgc_list_back (const cgc_list * list);
 
 /**
  * \brief Push to the front.
- * \param list List
- * \param element Element.
+ * \param[in,out] list List
+ * \param[in] element Element.
  * \retval 0 in case of success
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
  * \retval -2 if the the function failed because memory allocation failed. \c
  * errno may be set to \c ENOMEM.
  * \relatesalso cgc_list
@@ -365,10 +417,11 @@ int cgc_list_push_front (cgc_list * list, void * element);
 
 /**
  * \brief Push to the back.
- * \param list List
- * \param element Element.
+ * \param[in,out] list List
+ * \param[in] element Element.
  * \retval 0 in case of success
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
  * \retval -2 if the the function failed because memory allocation failed. \c
  * errno may be set to \c ENOMEM.
  * \relatesalso cgc_list
@@ -399,20 +452,21 @@ void * cgc_list_pop_back (cgc_list * list);
 
 /**
  * \brief Insert an element a the Ith place in a list.
- * \param list List.
- * \param i Target index.
- * \param element Element.
+ * \param[in,out] list List.
+ * \param[in] i Target index.
+ * \param[in] element Element.
  * \relatesalso cgc_list
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
- * \retval -2 if the the function failed because memory allocation failed. \c
- * errno may be set to \c ENOMEM.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
+ * \retval -2 if the function failed because memory allocation failed. \c errno
+ * may be set to \c ENOMEM.
  * \note If \c i is greater than the size of the list, the \c element will be
  * inserted at the end of the list.
  * \note The supplied element will be copied into the list. It is safe to free
- * \c element afterwards.
+ * \c element afterwards, if it was malloc'd.
  */
 int cgc_list_insert (cgc_list * list, size_t i, void * element);
 
@@ -423,20 +477,22 @@ int cgc_list_insert (cgc_list * list, size_t i, void * element);
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
  */
 int cgc_list_clear (cgc_list * list);
 
 /**
  * \brief Erase elements from start to end excluded from a list.
- * \param list List.
- * \param start First element to remove.
- * \param end Element after the last element to remove.
+ * \param[in,out] list List.
+ * \param[in] start First element to remove.
+ * \param[in] end Element after the last element to remove.
  * \relatesalso cgc_list
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
- * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
  */
 int cgc_list_erase (cgc_list * list, size_t start, size_t end);
 
@@ -446,8 +502,8 @@ int cgc_list_erase (cgc_list * list, size_t start, size_t end);
 
 /**
  * \brief Map.
- * \param list List
- * \param op_fun Operation.
+ * \param[in,out] list List
+ * \param[in] op_fun Operation.
  * \relatesalso cgc_list
  * \note The list will be modified. First copy the list if the original must
  * be kept.
@@ -456,9 +512,9 @@ void cgc_list_map (cgc_list * list, cgc_unary_op_function op_fun);
 
 /**
  * \brief Fold left.
- * \param list List.
- * \param op_fun Binary operation.
- * \param base_result Initial value and result.
+ * \param[in] list List.
+ * \param[in] op_fun Binary operation.
+ * \param[in,out] base_result Initial value and result.
  * \relatesalso cgc_list
  * \note \c base_result must hold the initial value before the call to this
  * function but will be modified to hold the result.
@@ -467,9 +523,9 @@ void cgc_list_fold_left (const cgc_list * list, cgc_binary_op_left_function op_f
 
 /**
  * \brief Fold right.
- * \param list List.
- * \param op_fun Binary operation.
- * \param base_result Initial value and result.
+ * \param[in] list List.
+ * \param[in] op_fun Binary operation.
+ * \param[in,out] base_result Initial value and result.
  * \relatesalso cgc_list
  * \note \c base_result must hold the initial value before the call to this
  * function but will be modified to hold the result.
