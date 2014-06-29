@@ -58,15 +58,17 @@ typedef struct cgc_vector
 /**
  * \brief Create a new cgc_vector
  * \param element_size Size of the elements.
+ * \param copy_fun Copy function
+ * \param clean_fun Cleaning function
  * \param size Vector size.
  * \relatesalso cgc_vector
  * \return pointer to a cgc_vector.
  */
-cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function cop_fun, cgc_clean_function clean_fun, size_t size);
+cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size);
 
 /**
  * \brief Free a cgc_vector.
- * \param vector.
+ * \param vector Vector.
  * \relatesalso cgc_vector
  */
 void cgc_vector_free (cgc_vector * vector);
@@ -115,7 +117,7 @@ void * cgc_vector_at (cgc_vector * vector, size_t i);
 
 /**
  * \brief Get the first element.
- * \param vector.
+ * \param vector Vector.
  * \return First element.
  * \relatesalso cgc_vector
  */
@@ -123,7 +125,7 @@ void * cgc_vector_front (cgc_vector * vector);
 
 /**
  * \brief Get the last element.
- * \param vector.
+ * \param vector Vector.
  * \return Last element.
  * \relatesalso cgc_vector
  */
@@ -137,6 +139,13 @@ void * cgc_vector_back (cgc_vector * vector);
  * \brief Push front an element.
  * \param vector Vector.
  * \param element Element.
+ * \retval 0 in case of success
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
+ * \return This function shall return 0 in case of success, a negative integer
+ * in case of failure.
+ * \note The supplied element will be copied into the list. It is safe to free
+ * \c element afterwards.
  * \relatesalso cgc_vector
  */
 int cgc_vector_push_front (cgc_vector * vector, void * element);
@@ -145,6 +154,13 @@ int cgc_vector_push_front (cgc_vector * vector, void * element);
  * \brief Push back an element.
  * \param vector Vector.
  * \param element Element.
+ * \retval 0 in case of success
+ * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \c EINVAL.
+ * \return This function shall return 0 in case of success, a negative integer
+ * in case of failure.
+ * \note The supplied element will be copied into the list. It is safe to free
+ * \c element afterwards.
  * \relatesalso cgc_vector
  */
 int cgc_vector_push_back (cgc_vector * vector, void * element);
@@ -152,7 +168,6 @@ int cgc_vector_push_back (cgc_vector * vector, void * element);
 /**
  * \brief Pop front an element.
  * \param vector Vector.
- * \param element Element.
  * \return element
  * \relatesalso cgc_vector
  */
@@ -161,20 +176,10 @@ void * cgc_vector_pop_front (cgc_vector * vector);
 /**
  * \brief Pop back an element.
  * \param vector Vector.
- * \param element Element.
  * \return element
  * \relatesalso cgc_vector
  */
 void * cgc_vector_pop_back (cgc_vector * vector);
-
-/**
- * \brief Pop back an element.
- * \param vector Vector.
- * \param element Element.
- * \return element
- * \relatesalso cgc_vector
- */
-void * cgc_vector_pop_front (cgc_vector * vector);
 
 /**
  * \brief Insert an element at index \c i.
@@ -182,6 +187,15 @@ void * cgc_vector_pop_front (cgc_vector * vector);
  * \param i Index.
  * \param element Element.
  * \relatesalso cgc_vector
+ * \return This function shall return 0 in case of success, a negative integer
+ * in case of failure.
+ * \retval 0 in case of success.
+ * \retval -1 if one of the arguments is \c NULL. \c errnor shall be set to
+ * \c EINVAL.
+ * \note If \c i is greater that the size of the list, the \c element will be
+ * inserted at the end of the list.
+ * \note The supplied element will be copied into the list. It is safe to free
+ * \c element afterwards, if it was malloc'd.
  */
 int cgc_vector_insert (cgc_vector * vector, size_t i, void * element);
 
@@ -189,6 +203,10 @@ int cgc_vector_insert (cgc_vector * vector, size_t i, void * element);
  * \brief Clear the vector.
  * \param vector
  * \relatesalso cgc_vector
+ * \return This function shall return 0 in case of success, a negative integer
+ * in case of failure.
+ * \retval 0 in case of success.
+ * \retval -1 if \c vector is \c NULL. \c errno shall be set to \c EINVAL.
  */
 int cgc_vector_clear (cgc_vector * vector);
 
@@ -198,6 +216,10 @@ int cgc_vector_clear (cgc_vector * vector);
  * \param start Start.
  * \param end End.
  * \relatesalso cgc_vector
+ * \return This function shall return 0 in case of success, a negative integer
+ * in case of failure.
+ * \retval 0 in case of success.
+ * \retval -1 if one of the arguments is NULL. \c errno shall be set to \c EINVAL.
  */
 int cgc_vector_erase (cgc_vector * vector, size_t start, size_t end);
 

@@ -50,13 +50,15 @@ static inline int _cgc_vector_grow (cgc_vector * vector, size_t new_size)
     return 0;
 }
 
-static inline void _cgc_vector_copy_element (cgc_vector * vector, size_t i, void * element)
+static inline int _cgc_vector_copy_element (cgc_vector * vector, size_t i, void * element)
 {
+    int error = 0;
     void * v = _cgc_vector_address (vector, i);
     if (vector->_copy_fun != NULL)
-        vector->_copy_fun (element, v);
+        error = vector->_copy_fun (element, v);
     else
         memcpy (v, element, vector->_element_size);
+    return error;
 }
 
 static inline void _cgc_vector_shift_elements (cgc_vector * vector, size_t source, size_t destination)
@@ -155,22 +157,36 @@ void * cgc_vector_back (cgc_vector * vector)
 // Modifiers.
 ////////////////////////////////////////////////////////////////////////////////
 
+static inline int _cgc_vector_push_prelude (cgc_vector * vector, void * element)
+{
+    int error = cgc_check_pointer (vector);
+    if (! error)
+        error = cgc_check_pointer (element);
+
+    return error;
+}
+
 int cgc_vector_push_front (cgc_vector * vector, void * element)
 {
-    return cgc_vector_insert (vector, 0, element);
+    int error = _cgc_vector_push_prelude (vector, element);
+    if (! error)
+        error = cgc_vector_insert (vector, 0, element);
+
+    return error;
 }
 
 int cgc_vector_push_back (cgc_vector * vector, void * element)
 {
-    if (vector != NULL)
+    int error = _cgc_vector_push_prelude (vector, element);
+    if (! error)
     {
         if (vector->_size >= vector->_max_size)
             _cgc_vector_grow (vector, vector->_max_size + vector->_size_step);
 
-        _cgc_vector_copy_element (vector, vector->_size, element);
+        error = _cgc_vector_copy_element (vector, vector->_size, element);
         vector->_size++;
     }
-    return 0;
+    return error;
 }
 
 void * cgc_vector_pop_front (cgc_vector * vector)
@@ -208,7 +224,8 @@ void * cgc_vector_pop_back (cgc_vector * vector)
 
 int cgc_vector_insert (cgc_vector * vector, size_t i, void * element)
 {
-    if (vector != NULL)
+    int error = _cgc_vector_push_prelude (vector, element);
+    if (! error)
     {
         if (i >= vector->_max_size)
         {
@@ -227,9 +244,10 @@ int cgc_vector_insert (cgc_vector * vector, size_t i, void * element)
         {
             vector->_size = i+1;
         }
-        _cgc_vector_copy_element (vector, i, element);
+        error = _cgc_vector_copy_element (vector, i, element);
     }
-    return 0;
+
+    return error;
 }
 
 int cgc_vector_clear (cgc_vector * vector)
