@@ -32,7 +32,7 @@ static const unsigned int CGC_VERSION_MAJOR = 0;
 /**
  * \brief CGC Version, minor.
  */
-static const unsigned int CGC_VERSION_MINOR = 3;
+static const unsigned int CGC_VERSION_MINOR = 4;
 
 /**
  * \brief CGC Version, patch.
