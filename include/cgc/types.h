@@ -40,12 +40,12 @@ typedef int (* cgc_copy_function) (const void *, void *);
 typedef int (* cgc_unary_op_function) (void *);
 
 /**
- * \bref Binary operation functions.
+ * \brief Binary operation functions.
  */
 typedef int (* cgc_binary_op_right_function) (const void *, void *);
 
 /**
- * \bref Binary operation functions.
+ * \brief Binary operation functions.
  */
 typedef int (* cgc_binary_op_left_function) (void *, const void *);
 
