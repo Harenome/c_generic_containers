@@ -37,7 +37,7 @@
  * \retval -1 otherwise.
  * \note \c errno will be set to \c EINVAL if \c pointer points to \c NULL.
  */
-static inline int cgc_check_pointer (void * pointer)
+static inline int cgc_check_pointer (const void * const pointer)
 {
     int error = 0;
     if (pointer == NULL)

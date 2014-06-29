@@ -105,7 +105,7 @@ size_t cgc_string_vector_max_size (const cgc_string_vector * vector);
  * \return element.
  * \relatesalso cgc_string_vector
  */
-char * cgc_string_vector_at (cgc_string_vector * vector, size_t i);
+char * cgc_string_vector_at (const cgc_string_vector * vector, size_t i);
 
 /**
  * \brief Get the first element.
@@ -113,7 +113,7 @@ char * cgc_string_vector_at (cgc_string_vector * vector, size_t i);
  * \return First element.
  * \relatesalso cgc_string_vector
  */
-char * cgc_string_vector_front (cgc_string_vector * vector);
+char * cgc_string_vector_front (const cgc_string_vector * vector);
 
 /**
  * \brief Get the last element.
@@ -121,7 +121,7 @@ char * cgc_string_vector_front (cgc_string_vector * vector);
  * \return Last element.
  * \relatesalso cgc_string_vector
  */
-char * cgc_string_vector_back (cgc_string_vector * vector);
+char * cgc_string_vector_back (const cgc_string_vector * vector);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Modifiers.

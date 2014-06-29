@@ -113,7 +113,7 @@ size_t cgc_vector_max_size (const cgc_vector * vector);
  * \return element.
  * \relatesalso cgc_vector
  */
-void * cgc_vector_at (cgc_vector * vector, size_t i);
+void * cgc_vector_at (const cgc_vector * vector, size_t i);
 
 /**
  * \brief Get the first element.
@@ -121,7 +121,7 @@ void * cgc_vector_at (cgc_vector * vector, size_t i);
  * \return First element.
  * \relatesalso cgc_vector
  */
-void * cgc_vector_front (cgc_vector * vector);
+void * cgc_vector_front (const cgc_vector * vector);
 
 /**
  * \brief Get the last element.
@@ -129,7 +129,7 @@ void * cgc_vector_front (cgc_vector * vector);
  * \return Last element.
  * \relatesalso cgc_vector
  */
-void * cgc_vector_back (cgc_vector * vector);
+void * cgc_vector_back (const cgc_vector * vector);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Modifiers.
@@ -148,7 +148,7 @@ void * cgc_vector_back (cgc_vector * vector);
  * \c element afterwards.
  * \relatesalso cgc_vector
  */
-int cgc_vector_push_front (cgc_vector * vector, void * element);
+int cgc_vector_push_front (cgc_vector * vector, const void * element);
 
 /**
  * \brief Push back an element.
@@ -163,7 +163,7 @@ int cgc_vector_push_front (cgc_vector * vector, void * element);
  * \c element afterwards.
  * \relatesalso cgc_vector
  */
-int cgc_vector_push_back (cgc_vector * vector, void * element);
+int cgc_vector_push_back (cgc_vector * vector, const void * element);
 
 /**
  * \brief Pop front an element.
@@ -197,7 +197,7 @@ void * cgc_vector_pop_back (cgc_vector * vector);
  * \note The supplied element will be copied into the list. It is safe to free
  * \c element afterwards, if it was malloc'd.
  */
-int cgc_vector_insert (cgc_vector * vector, size_t i, void * element);
+int cgc_vector_insert (cgc_vector * vector, size_t i, const void * element);
 
 /**
  * \brief Clear the vector.

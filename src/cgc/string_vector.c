@@ -23,7 +23,7 @@
  */
 #include "cgc/string_vector.h"
 
-static inline char * _cgc_strdup (const char * string)
+static inline char * _cgc_strdup (const char * const string)
 {
     char * copy = malloc ((strlen (string) + 1) * sizeof (char));
     if (copy != NULL)
@@ -31,7 +31,7 @@ static inline char * _cgc_strdup (const char * string)
     return copy;
 }
 
-static void _cgc_str_clean (void * content)
+static void _cgc_str_clean (void * const content)
 {
     char ** element = content;
     free (* element);
@@ -46,7 +46,7 @@ cgc_string_vector * cgc_string_vector_new (size_t size)
     return cgc_vector_new (sizeof (char **), NULL, _cgc_str_clean, size);
 }
 
-void cgc_string_vector_free (cgc_string_vector * vector)
+void cgc_string_vector_free (cgc_string_vector * const vector)
 {
     cgc_string_vector_clear (vector);
     cgc_vector_free (vector);
@@ -56,17 +56,17 @@ void cgc_string_vector_free (cgc_string_vector * vector)
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////
 
-bool cgc_string_vector_is_empty (const cgc_string_vector * vector)
+bool cgc_string_vector_is_empty (const cgc_string_vector * const vector)
 {
     return cgc_vector_is_empty (vector);
 }
 
-size_t cgc_string_vector_size (const cgc_string_vector * vector)
+size_t cgc_string_vector_size (const cgc_string_vector * const vector)
 {
     return cgc_vector_size (vector);
 }
 
-size_t cgc_string_vector_max_size (const cgc_string_vector * vector)
+size_t cgc_string_vector_max_size (const cgc_string_vector * const vector)
 {
     return cgc_vector_max_size (vector);
 }
@@ -75,19 +75,19 @@ size_t cgc_string_vector_max_size (const cgc_string_vector * vector)
 // Access.
 ////////////////////////////////////////////////////////////////////////////////
 
-char * cgc_string_vector_at (cgc_string_vector * vector, size_t i)
+char * cgc_string_vector_at (const cgc_string_vector * const vector, size_t i)
 {
     char ** string = cgc_vector_at (vector, i);
     return * string;
 }
 
-char * cgc_string_vector_front (cgc_string_vector * vector)
+char * cgc_string_vector_front (const cgc_string_vector * const vector)
 {
     char ** string = cgc_vector_front (vector);
     return * string;
 }
 
-char * cgc_string_vector_back (cgc_string_vector * vector)
+char * cgc_string_vector_back (const cgc_string_vector * const vector)
 {
     char ** string = cgc_vector_back (vector);
     return * string;
@@ -97,19 +97,19 @@ char * cgc_string_vector_back (cgc_string_vector * vector)
 // Modifiers.
 ////////////////////////////////////////////////////////////////////////////////
 
-int cgc_string_vector_push_front (cgc_string_vector * vector, const char * string)
+int cgc_string_vector_push_front (cgc_string_vector * const vector, const char * const string)
 {
-    char * copy = _cgc_strdup (string);
+    const char * const copy = _cgc_strdup (string);
     return cgc_vector_push_front (vector, & copy);
 }
 
-int cgc_string_vector_push_back (cgc_string_vector * vector, const char * string)
+int cgc_string_vector_push_back (cgc_string_vector * const vector, const char * const string)
 {
-    char * copy = _cgc_strdup (string);
+    const char * const copy = _cgc_strdup (string);
     return cgc_vector_push_back (vector, & copy);
 }
 
-char * cgc_string_vector_pop_front (cgc_string_vector * vector)
+char * cgc_string_vector_pop_front (cgc_string_vector * const vector)
 {
     char ** front_copy = cgc_vector_pop_front (vector);
     char * front = * front_copy;
@@ -117,7 +117,7 @@ char * cgc_string_vector_pop_front (cgc_string_vector * vector)
     return front;
 }
 
-char * cgc_string_vector_pop_back (cgc_string_vector * vector)
+char * cgc_string_vector_pop_back (cgc_string_vector * const vector)
 {
     char ** back_copy = cgc_vector_pop_back (vector);
     char * back = * back_copy;
@@ -125,18 +125,18 @@ char * cgc_string_vector_pop_back (cgc_string_vector * vector)
     return back;
 }
 
-int cgc_string_vector_insert (cgc_string_vector * vector, size_t i, const char * string)
+int cgc_string_vector_insert (cgc_string_vector * const vector, size_t i, const char * const string)
 {
-    char * copy = _cgc_strdup (string);
+    const char * const copy = _cgc_strdup (string);
     return cgc_vector_insert (vector, i, & copy);
 }
 
-int cgc_string_vector_clear (cgc_string_vector * vector)
+int cgc_string_vector_clear (cgc_string_vector * const vector)
 {
     return cgc_vector_clear (vector);
 }
 
-int cgc_string_vector_erase (cgc_string_vector * vector, size_t start, size_t end)
+int cgc_string_vector_erase (cgc_string_vector * const vector, size_t start, size_t end)
 {
     return cgc_vector_erase (vector, start, end);
 }

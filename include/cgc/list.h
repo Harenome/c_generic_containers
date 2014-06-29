@@ -413,7 +413,7 @@ void * cgc_list_back (const cgc_list * list);
  * \note The supplied element will be copied into the list. It is safe to free
  * \c element afterwards.
  */
-int cgc_list_push_front (cgc_list * list, void * element);
+int cgc_list_push_front (cgc_list * list, const void * element);
 
 /**
  * \brief Push to the back.
@@ -430,7 +430,7 @@ int cgc_list_push_front (cgc_list * list, void * element);
  * \note The supplied element will be copied into the list. It is safe to free
  * \c element afterwards.
  */
-int cgc_list_push_back (cgc_list * list, void * element);
+int cgc_list_push_back (cgc_list * list, const void * element);
 
 /**
  * \brief Pop the front.
@@ -468,7 +468,7 @@ void * cgc_list_pop_back (cgc_list * list);
  * \note The supplied element will be copied into the list. It is safe to free
  * \c element afterwards, if it was malloc'd.
  */
-int cgc_list_insert (cgc_list * list, size_t i, void * element);
+int cgc_list_insert (cgc_list * list, size_t i, const void * element);
 
 /**
  * \brief Clear a list.

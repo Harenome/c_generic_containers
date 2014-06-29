@@ -33,13 +33,13 @@ static const size_t _DEFAULT_SIZE_STEP = 128;
 // Static utilities.
 ////////////////////////////////////////////////////////////////////////////////
 
-static inline void * _cgc_vector_address (cgc_vector * vector, size_t i)
+static inline void * _cgc_vector_address (const cgc_vector * const vector, size_t i)
 {
     char * v = vector->_content;
     return v + i * vector->_element_size;
 }
 
-static inline int _cgc_vector_grow (cgc_vector * vector, size_t new_size)
+static inline int _cgc_vector_grow (cgc_vector * const vector, size_t new_size)
 {
     void * new_content = realloc (vector->_content, new_size * vector->_element_size);
     if (new_content != NULL)
@@ -50,7 +50,7 @@ static inline int _cgc_vector_grow (cgc_vector * vector, size_t new_size)
     return 0;
 }
 
-static inline int _cgc_vector_copy_element (cgc_vector * vector, size_t i, void * element)
+static inline int _cgc_vector_copy_element (cgc_vector * const vector, size_t i, const void * const element)
 {
     int error = 0;
     void * v = _cgc_vector_address (vector, i);
@@ -61,7 +61,7 @@ static inline int _cgc_vector_copy_element (cgc_vector * vector, size_t i, void 
     return error;
 }
 
-static inline void _cgc_vector_shift_elements (cgc_vector * vector, size_t source, size_t destination)
+static inline void _cgc_vector_shift_elements (cgc_vector * const vector, size_t source, size_t destination)
 {
     void * start = _cgc_vector_address (vector, source);
     void * new_start = _cgc_vector_address (vector, destination);
@@ -69,7 +69,7 @@ static inline void _cgc_vector_shift_elements (cgc_vector * vector, size_t sourc
     memmove (new_start, start, vector->_element_size * (vector->_size - shift_start));
 }
 
-static inline void _cgc_vector_reset_elements (cgc_vector * vector, size_t start, size_t end)
+static inline void _cgc_vector_reset_elements (cgc_vector * const vector, size_t start, size_t end)
 {
     size_t total_size = end - start;
     void * beginning = _cgc_vector_address (vector, start);
@@ -107,7 +107,7 @@ cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function copy_fun, cg
     return vector;
 }
 
-void cgc_vector_free (cgc_vector * vector)
+void cgc_vector_free (cgc_vector * const vector)
 {
     if (vector != NULL)
         free (vector->_content);
@@ -118,17 +118,17 @@ void cgc_vector_free (cgc_vector * vector)
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////
 
-bool cgc_vector_is_empty (const cgc_vector * vector)
+bool cgc_vector_is_empty (const cgc_vector * const vector)
 {
     return vector->_size == 0;
 }
 
-size_t cgc_vector_size (const cgc_vector * vector)
+size_t cgc_vector_size (const cgc_vector * const vector)
 {
     return vector->_size;
 }
 
-size_t cgc_vector_max_size (const cgc_vector * vector)
+size_t cgc_vector_max_size (const cgc_vector * const vector)
 {
     return vector->_max_size;
 }
@@ -137,17 +137,17 @@ size_t cgc_vector_max_size (const cgc_vector * vector)
 // Access.
 ////////////////////////////////////////////////////////////////////////////////
 
-void * cgc_vector_at (cgc_vector * vector, size_t i)
+void * cgc_vector_at (const cgc_vector * const vector, size_t i)
 {
     return _cgc_vector_address (vector, i);
 }
 
-void * cgc_vector_front (cgc_vector * vector)
+void * cgc_vector_front (const cgc_vector * const vector)
 {
     return _cgc_vector_address (vector, 0);
 }
 
-void * cgc_vector_back (cgc_vector * vector)
+void * cgc_vector_back (const cgc_vector * const vector)
 {
     size_t back_index = vector->_size > 0 ? vector->_size - 1 : 0;
     return _cgc_vector_address (vector, back_index);
@@ -157,7 +157,7 @@ void * cgc_vector_back (cgc_vector * vector)
 // Modifiers.
 ////////////////////////////////////////////////////////////////////////////////
 
-static inline int _cgc_vector_push_prelude (cgc_vector * vector, void * element)
+static inline int _cgc_vector_push_prelude (const cgc_vector * const vector, const void * const element)
 {
     int error = cgc_check_pointer (vector);
     if (! error)
@@ -166,7 +166,7 @@ static inline int _cgc_vector_push_prelude (cgc_vector * vector, void * element)
     return error;
 }
 
-int cgc_vector_push_front (cgc_vector * vector, void * element)
+int cgc_vector_push_front (cgc_vector * const vector, const void * const element)
 {
     int error = _cgc_vector_push_prelude (vector, element);
     if (! error)
@@ -175,7 +175,7 @@ int cgc_vector_push_front (cgc_vector * vector, void * element)
     return error;
 }
 
-int cgc_vector_push_back (cgc_vector * vector, void * element)
+int cgc_vector_push_back (cgc_vector * const vector, const void * const element)
 {
     int error = _cgc_vector_push_prelude (vector, element);
     if (! error)
@@ -189,7 +189,7 @@ int cgc_vector_push_back (cgc_vector * vector, void * element)
     return error;
 }
 
-void * cgc_vector_pop_front (cgc_vector * vector)
+void * cgc_vector_pop_front (cgc_vector * const vector)
 {
     void * element = NULL;
     if (vector != NULL)
@@ -206,7 +206,7 @@ void * cgc_vector_pop_front (cgc_vector * vector)
     return element;
 }
 
-void * cgc_vector_pop_back (cgc_vector * vector)
+void * cgc_vector_pop_back (cgc_vector * const vector)
 {
     void * element = NULL;
     if (vector != NULL)
@@ -222,7 +222,7 @@ void * cgc_vector_pop_back (cgc_vector * vector)
     return element;
 }
 
-int cgc_vector_insert (cgc_vector * vector, size_t i, void * element)
+int cgc_vector_insert (cgc_vector * const vector, size_t i, const void * const element)
 {
     int error = _cgc_vector_push_prelude (vector, element);
     if (! error)
@@ -250,12 +250,12 @@ int cgc_vector_insert (cgc_vector * vector, size_t i, void * element)
     return error;
 }
 
-int cgc_vector_clear (cgc_vector * vector)
+int cgc_vector_clear (cgc_vector * const vector)
 {
     return cgc_vector_erase (vector, 0, cgc_vector_size (vector));
 }
 
-int cgc_vector_erase (cgc_vector * vector, size_t start, size_t end)
+int cgc_vector_erase (cgc_vector * const vector, size_t start, size_t end)
 {
     int error = 0;
     if (start > end || vector == NULL)
