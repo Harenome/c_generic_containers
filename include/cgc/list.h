@@ -63,8 +63,9 @@ typedef struct cgc_list_element
  * - the size in bytes of the elements
  * - a copy function
  * - a cleaning function
- * It is up to the user to properly write these 2 functions in order to create
- * a valid CGC List.
+ *
+ * It is up to the user to properly write these 2 functions, if needed,
+ * in order to create a valid CGC List.
  *
  * ## Element allocation
  * CGC Lists will dynamically allocate memory for its elements. This allocation
@@ -73,7 +74,10 @@ typedef struct cgc_list_element
  * ## Copy function
  * Since the CGC List could possibly hold any type of element, it might be
  * necessary to supply a way to properly copy elements into the list.
-
+ *
+ * If no copy function was provided at the list creation, a mere copy (using
+ * \c memcpy) of the provided element will be done.
+ *
  * ### Prototype
  * The prototype of this function must be:
  *
@@ -84,7 +88,9 @@ typedef struct cgc_list_element
  * This function shall assume the memory for the copy has already been allocated.
  *
  * ### When and how to define such functions
- * A copy function should be provided for elements which could hold pointers.
+ * A copy function should be provided for elements which could hold pointers and
+ * dynamically allocated memory.
+ *
  * If a list is destined to store simple elements, it won't require a copy
  * function.
  *
@@ -95,7 +101,7 @@ typedef struct cgc_list_element
  * if needed, free any memory an element of the list could supposedly hold.
  *
  * Note that the function should free any dynamically allocated memory held by
- * the list element but should not free the element.
+ * the list element but should not free the aforementioned element.
  *
  * ### Prototype
  * The prototype of this function must be:
@@ -107,56 +113,79 @@ typedef struct cgc_list_element
  * CGC Lists can be dynamically created using cgc_list_new(). Such lists must be
  * destroyed using cgc_list_free().
  *
- * ### Simple example
+ * ### Simple examples
+ * #### Integer list
  * One can create a list of integers as follows:
  *
- *      cgc_list * list = cgc_list_new (sizeof (int), NULL, NULL);
- *      // Use the list.
- *      cgc_list_free (list);
+ *     // Create a list: give the size of an int, no copy or cleaning function.
+ *     cgc_list * list = cgc_list_new (sizeof (int), NULL, NULL);
+ *     // ...
+ *     // Use the list...
+ *     // ...
+ *     // Free the list once unneeded.
+ *     cgc_list_free (list);
  *
+ * #### Struct list
  * Simple structs can also be stored in a list:
  *
- *     // Struct definition
+ *     // Define a struct.
  *     struct my_struct
  *     {
  *         int _first_field;
  *         int _second_field;
  *     };
  *
- *     // Somewhere else:
+ *     // Create a list.
  *     cgc_list * list = cgc_list_new (sizeof (struct my_struct), NULL, NULL);
- *     // Use the list.
+ *     // ...
+ *     // Use the list...
+ *     // ...
+ *     // Free the list once unneeded.
  *     cgc_list_free (list);
  *
  * ### Complex example
  * Sometimes, the element holds dynamically allocated memory.
  *
- *     // Struct definition
+ *     // Define a struct.
  *     struct my_struct
  *     {
- *         int _static;
- *         int * _dynamic;
+ *         int _static;         // An integer.
+ *         int * _dynamic;      // A pointer to an integer.
  *     };
  *
+ *     // Define a copy function.
+ *     // It shall assume the memory is already allocated.
  *     int my_struct_copy (const void * source, void * destination)
  *     {
- *         my_struct * s = source;
- *         my_struct * d = destination;
+ *         // Cast to know the actual size.
+ *         const my_struct * const s = source;
+ *         my_struct * const d = destination;
+ *
+ *         // Copy the contents.
  *         * d = * s;
- *         // The struct was copied...but it is the address of _dynamic that was copied !
- *         * d->_dynamic = s->_dynamic;
+ *
+ *         // Now, d->_dynamic == s->_dynamic is true.
+ *         // But it is a pointer...
+ *         d->_dynamic = malloc (sizeof (int));
+ *         * d->_dynamic = * s->_dynamic;
+
  *         return 0;
  *     }
  *
+ *     // Define a free function.
  *     void my_struct_clean (void * pointer)
  *     {
+ *         // The ._dynamic field points to a malloc'd memory.
  *         struct my_struct * my_s = pointer;
- *         free (my_s->_field);
+ *         free (my_s->_dynamic);
  *     }
  *
- *     // Somewhere else:
+ *     // Create a list.
  *     cgc_list * list = cgc_list_new (sizeof (struct my_struct), my_struct_copy, my_struct_clean);
- *     // Use the list.
+ *     // ...
+ *     // Use the list...
+ *     // ...
+ *     // Free the list.
  *     cgc_list_free (list);
  *
  * ## Static allocation
@@ -190,7 +219,7 @@ typedef struct cgc_list_element
  * will try to free all of its remaining elements).
  *
  * Access function  | Pointer to
- -------------------|--------------
+ * -----------------|--------------
  * cgc_list_at()    | Nth element
  * cgc_list_front() | First element
  * cgc_list_back()  | Last element
@@ -199,14 +228,14 @@ typedef struct cgc_list_element
  * - check whether the supplied list is valid
  * - check whether the requested element exists
  *
- * Thus, it is necessery to supply valid lists, and to check the list's size
+ * Thus, it is necessary to supply valid lists, and to check the list's size
  * before trying to access an element.
  *
  * ## While modifying the list
  * It is also possible to get an element while modifying the list: the first
  * or the last element can be accessed while removing it from the list.
  *
- * Important: Elements accessed in this fashion shall be freed by the user.
+ * \b Important: Elements accessed in this fashion shall be freed by the user.
  *
  * Access function      | Element
  * ---------------------|---------------
@@ -284,31 +313,40 @@ typedef struct cgc_list
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Create a new cgc_list
- * \param element_size Element size
+ * \brief Create a new cgc_list.
+ * \param element_size Element size.
  * \param copy_fun Copy function.
  * \param clean_fun Cleaning function.
  * \relatesalso cgc_list
- * \return pointer to a cgc_list.
+ * \return The pointer to the new cgc_list in case of success. \c NULL in case
+ * of failure.
  * \retval NULL if the list could not be allocated.
  * \note Lists obtained this way must be freed using cgc_list_free().
+ * \note In case of failure, \c errno may be set to \c ENOMEM.
+ * \note A call to this function may change the value of \c errno.
  */
 cgc_list * cgc_list_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun);
 
 /**
- * \brief Free a cgc_list.
+ * \brief Free a dynamically allocated cgc_list.
  * \param list List.
  * \relatesalso cgc_list
+ * \note A call to this function may change the value of \c errno.
+ * \note It is safe to pass a \c NULL to this function.
+ * \warning It is strongly advised to use this function only of lists obtained
+ * via cgc_list_new().
  */
 void cgc_list_free (cgc_list * list);
 
 /**
  * \brief Copy a list.
  * \param list List.
- * \return copy.
+ * \return A pointer to the copy in case of success. \c NULL in case of failure.
  * \relatesalso cgc_list
- * \retval NULL if the list could not be copied.
+ * \note It is safe to pass a \c NULL to this function.
+ * \retval NULL if the list could not be copied or \c list was \c NULL.
  * \note Lists obtained this way must be freed using cgc_list_free().
+ * \note A call to this function may change the value of \c errno.
  */
 cgc_list * cgc_list_copy (const cgc_list * list);
 
@@ -369,6 +407,8 @@ size_t cgc_list_size (const cgc_list * list);
  * \param i Index.
  * \return element.
  * \relatesalso cgc_list
+ * \pre cgc_list_size(list) > \c i
+ * \pre list != NULL
  * \warning This function does not check whether the supplied list is valid!
  * \warning This function does not check whether the supplied list is long enough!
  */
@@ -379,6 +419,8 @@ void * cgc_list_at (const cgc_list * list, size_t i);
  * \param list List.
  * \return Front.
  * \relatesalso cgc_list
+ * \pre cgc_list_is_empty(list) == \c false
+ * \pre list != NULL
  * \warning This function does not check whether the supplied list is valid!
  * \warning This function does not check whether the supplied list is long enough!
  */
@@ -389,6 +431,8 @@ void * cgc_list_front (const cgc_list * list);
  * \param list List.
  * \return Back.
  * \relatesalso cgc_list
+ * \pre cgc_list_is_empty(list) == \c false
+ * \pre list != NULL
  * \warning This function does not check whether the supplied list is valid!
  * \warning This function does not check whether the supplied list is long enough!
  */
@@ -438,6 +482,8 @@ int cgc_list_push_back (cgc_list * list, const void * element);
  * \return First element.
  * \relatesalso cgc_list
  * \warning It is up to the user to free the returned element once unneeded.
+ * \pre list != NULL
+ * \pre cgc_list_is_empty(list) == \c false
  */
 void * cgc_list_pop_front (cgc_list * list);
 
@@ -447,6 +493,8 @@ void * cgc_list_pop_front (cgc_list * list);
  * \return Last element.
  * \relatesalso cgc_list
  * \warning It is up to the user to free the returned element once unneeded.
+ * \pre list != NULL
+ * \pre cgc_list_is_empty(list) == \c false
  */
 void * cgc_list_pop_back (cgc_list * list);
 
