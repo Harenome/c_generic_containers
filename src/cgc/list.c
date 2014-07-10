@@ -50,7 +50,7 @@ cgc_list * cgc_list_copy (const cgc_list * const list)
     cgc_list * copy = NULL;
     if (list != NULL)
     {
-        cgc_list * const copy = cgc_list_new (list->_element_size, list->_copy_fun, list->_clean_fun);
+        copy = cgc_list_new (list->_element_size, list->_copy_fun, list->_clean_fun);
         if (! cgc_list_is_empty (list))
             for (cgc_list_element * e = list->_first; e != NULL; e = e->_next)
                 cgc_list_push_back (copy, e->_content);
