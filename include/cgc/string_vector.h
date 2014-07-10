@@ -51,7 +51,6 @@ typedef cgc_vector cgc_string_vector;
 
 /**
  * \brief Create a new cgc_string_vector
- * \param element_size Size of the elements.
  * \param size Vector size.
  * \relatesalso cgc_string_vector
  * \return pointer to a cgc_string_vector.
@@ -60,7 +59,7 @@ cgc_string_vector * cgc_string_vector_new (size_t size);
 
 /**
  * \brief Free a cgc_string_vector.
- * \param vector.
+ * \param vector Vector.
  * \relatesalso cgc_string_vector
  */
 void cgc_string_vector_free (cgc_string_vector * vector);
@@ -109,7 +108,7 @@ char * cgc_string_vector_at (const cgc_string_vector * vector, size_t i);
 
 /**
  * \brief Get the first element.
- * \param vector.
+ * \param vector Vector.
  * \return First element.
  * \relatesalso cgc_string_vector
  */
@@ -117,7 +116,7 @@ char * cgc_string_vector_front (const cgc_string_vector * vector);
 
 /**
  * \brief Get the last element.
- * \param vector.
+ * \param vector Vector.
  * \return Last element.
  * \relatesalso cgc_string_vector
  */
@@ -130,23 +129,24 @@ char * cgc_string_vector_back (const cgc_string_vector * vector);
 /**
  * \brief Push front an element.
  * \param vector Vector.
- * \param element Element.
+ * \param string Element.
  * \relatesalso cgc_vector
+ * \return Error code.
  */
 int cgc_string_vector_push_front (cgc_string_vector * vector, const char * string);
 
 /**
  * \brief Push back an element.
  * \param vector Vector.
- * \param element Element.
+ * \param string Element.
  * \relatesalso cgc_string_vector
+ * \return Error code.
  */
 int cgc_string_vector_push_back (cgc_string_vector * vector, const char * string);
 
 /**
  * \brief Pop front an element.
  * \param vector Vector.
- * \param element Element.
  * \return element
  * \relatesalso cgc_vector
  */
@@ -155,7 +155,6 @@ char * cgc_string_vector_pop_front (cgc_string_vector * vector);
 /**
  * \brief Pop back an element.
  * \param vector Vector.
- * \param element Element.
  * \return element
  * \relatesalso cgc_string_vector
  */
@@ -165,15 +164,17 @@ char * cgc_string_vector_pop_back (cgc_string_vector * vector);
  * \brief Insert an element at index \c i.
  * \param vector Vector.
  * \param i Index.
- * \param element Element.
+ * \param string Element.
  * \relatesalso cgc_string_vector
+ * \return Error code    .
  */
 int cgc_string_vector_insert (cgc_string_vector * vector, size_t i, const char * string);
 
 /**
  * \brief Clear the vector.
- * \param vector
+ * \param vector Vector.
  * \relatesalso cgc_string_vector
+ * \return Error code.
  */
 int cgc_string_vector_clear (cgc_string_vector * vector);
 
@@ -183,6 +184,7 @@ int cgc_string_vector_clear (cgc_string_vector * vector);
  * \param start Start.
  * \param end End.
  * \relatesalso cgc_vector
+ * \return Error code.
  */
 int cgc_string_vector_erase (cgc_string_vector * vector, size_t start, size_t end);
 
