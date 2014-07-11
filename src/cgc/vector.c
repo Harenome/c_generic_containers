@@ -80,7 +80,7 @@ static inline void _cgc_vector_reset_elements (cgc_vector * const vector, size_t
 // New, free.
 ////////////////////////////////////////////////////////////////////////////////
 
-cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size)
+cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size)
 {
     size_t size_step = size != 0 ? size : _DEFAULT_SIZE_STEP;
 
@@ -107,7 +107,7 @@ cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function copy_fun, cg
     return vector;
 }
 
-void cgc_vector_free (cgc_vector * const vector)
+void cgc_vector_destroy (cgc_vector * const vector)
 {
     if (vector != NULL)
         free (vector->_content);

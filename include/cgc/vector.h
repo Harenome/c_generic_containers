@@ -57,7 +57,7 @@
  * ## Element allocation
  * CGC Vectors allocate memory for several elements. If a size is provided at
  * the vector creation, it will be used as the default step for the vector's
- * growth (see cgc_vector_new()). Otherwise, the vector growth will use an
+ * growth (see cgc_vector_create()). Otherwise, the vector growth will use an
  * arbitrary step.
  *
  * ## Copy function
@@ -78,8 +78,8 @@
  *
  * # CGC Vector creation and destruction
  * ## Dynamic allocation
- * CGC Vectors can be dynamically created using cgc_vector_new(). Such vectors
- * must be destroyed using cgc_vector_free().
+ * CGC Vectors can be dynamically created using cgc_vector_create(). Such vectors
+ * must be destroyed using cgc_vector_destroy().
  *
  * # Vector properties
  * One can determine whether a vector is empty using cgc_vector_is_empty(), get
@@ -161,11 +161,11 @@ typedef struct cgc_vector
  * \relatesalso cgc_vector
  * \return pointer to a cgc_vector.
  * \retval NULL if the vector could not be allocated.
- * \note Vectors obtained this way must be detroyed using cgc_vector_free().
+ * \note Vectors obtained this way must be detroyed using cgc_vector_destroy().
  * \note In case of failure, \c errno may be set to \c ENOMEM.
  * \note A call to this function may change the value of \c errno.
  */
-cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size);
+cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size);
 
 /**
  * \brief Free a cgc_vector.
@@ -173,9 +173,9 @@ cgc_vector * cgc_vector_new (size_t element_size, cgc_copy_function copy_fun, cg
  * \relatesalso cgc_vector
  * \note It is safe to pass a \c NULL pointer to this function.
  * \warning It is strongly advised to use this function only on vectors obtained
- * via cgc_vector_new().
+ * via cgc_vector_create().
  */
-void cgc_vector_free (cgc_vector * vector);
+void cgc_vector_destroy (cgc_vector * vector);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.

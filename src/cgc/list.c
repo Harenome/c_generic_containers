@@ -27,7 +27,7 @@
 // New, free, copy.
 ////////////////////////////////////////////////////////////////////////////////
 
-cgc_list * cgc_list_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun)
+cgc_list * cgc_list_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun)
 {
     cgc_list * list = malloc (sizeof * list);
     if (list != NULL)
@@ -36,7 +36,7 @@ cgc_list * cgc_list_new (size_t element_size, cgc_copy_function copy_fun, cgc_cl
     return list;
 }
 
-void cgc_list_free (cgc_list * const list)
+void cgc_list_destroy (cgc_list * const list)
 {
     if (list != NULL)
     {
@@ -50,7 +50,7 @@ cgc_list * cgc_list_copy (const cgc_list * const list)
     cgc_list * copy = NULL;
     if (list != NULL)
     {
-        copy = cgc_list_new (list->_element_size, list->_copy_fun, list->_clean_fun);
+        copy = cgc_list_create (list->_element_size, list->_copy_fun, list->_clean_fun);
         if (! cgc_list_is_empty (list))
             for (cgc_list_element * e = list->_first; e != NULL; e = e->_next)
                 cgc_list_push_back (copy, e->_content);

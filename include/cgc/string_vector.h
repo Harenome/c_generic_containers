@@ -55,14 +55,14 @@ typedef cgc_vector cgc_string_vector;
  * \relatesalso cgc_string_vector
  * \return pointer to a cgc_string_vector.
  */
-cgc_string_vector * cgc_string_vector_new (size_t size);
+cgc_string_vector * cgc_string_vector_create (size_t size);
 
 /**
  * \brief Free a cgc_string_vector.
  * \param vector Vector.
  * \relatesalso cgc_string_vector
  */
-void cgc_string_vector_free (cgc_string_vector * vector);
+void cgc_string_vector_destroy (cgc_string_vector * vector);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.

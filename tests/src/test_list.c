@@ -55,7 +55,7 @@ int main (int argc, char ** argv)
 
     cgc_list * lists[2];
 
-    lists[0] = cgc_list_new (sizeof (int), NULL, NULL);
+    lists[0] = cgc_list_create (sizeof (int), NULL, NULL);
     for (int i = 0; i < 10; ++i)
         cgc_list_push_back (lists[0], & i);
     lists[1] = cgc_list_copy (lists[0]);
@@ -77,8 +77,8 @@ int main (int argc, char ** argv)
     print_int_list ("list_0", lists[0]);
 
     free (popped_int);
-    cgc_list_free (lists[0]);
-    cgc_list_free (lists[1]);
+    cgc_list_destroy (lists[0]);
+    cgc_list_destroy (lists[1]);
 
     return 0;
 }

@@ -110,20 +110,20 @@ typedef struct cgc_list_element
  *
  * # CGC List creation and destruction
  * ## Dynamic allocation
- * CGC Lists can be dynamically created using cgc_list_new(). Such lists must be
- * destroyed using cgc_list_free().
+ * CGC Lists can be dynamically created using cgc_list_create(). Such lists must be
+ * destroyed using cgc_list_destroy().
  *
  * ### Simple examples
  * #### Integer list
  * One can create a list of integers as follows:
  *
  *     // Create a list: give the size of an int, no copy or cleaning function.
- *     cgc_list * list = cgc_list_new (sizeof (int), NULL, NULL);
+ *     cgc_list * list = cgc_list_create (sizeof (int), NULL, NULL);
  *     // ...
  *     // Use the list...
  *     // ...
  *     // Free the list once unneeded.
- *     cgc_list_free (list);
+ *     cgc_list_destroy (list);
  *
  * #### Struct list
  * Simple structs can also be stored in a list:
@@ -136,12 +136,12 @@ typedef struct cgc_list_element
  *     };
  *
  *     // Create a list.
- *     cgc_list * list = cgc_list_new (sizeof (struct my_struct), NULL, NULL);
+ *     cgc_list * list = cgc_list_create (sizeof (struct my_struct), NULL, NULL);
  *     // ...
  *     // Use the list...
  *     // ...
  *     // Free the list once unneeded.
- *     cgc_list_free (list);
+ *     cgc_list_destroy (list);
  *
  * ### Complex example
  * Sometimes, the element holds dynamically allocated memory.
@@ -181,12 +181,12 @@ typedef struct cgc_list_element
  *     }
  *
  *     // Create a list.
- *     cgc_list * list = cgc_list_new (sizeof (struct my_struct), my_struct_copy, my_struct_clean);
+ *     cgc_list * list = cgc_list_create (sizeof (struct my_struct), my_struct_copy, my_struct_clean);
  *     // ...
  *     // Use the list...
  *     // ...
  *     // Free the list.
- *     cgc_list_free (list);
+ *     cgc_list_destroy (list);
  *
  * ## Static allocation
  * CGC Lists can also be statically declared. In such cases, one must initialize
@@ -199,7 +199,7 @@ typedef struct cgc_list_element
  *      cgc_list_clean (& list);
  *
  * ## Note on dynamic lists and cleaning
- * Note that cgc_list_free() actually is equivalent to calling cgc_list_clean()
+ * Note that cgc_list_destroy() actually is equivalent to calling cgc_list_clean()
  * and then manually freeing the dynamically allocated list using the standard
  * library's \c free.
  *
@@ -321,11 +321,11 @@ typedef struct cgc_list
  * \return The pointer to the new cgc_list in case of success. \c NULL in case
  * of failure.
  * \retval NULL if the list could not be allocated.
- * \note Lists obtained this way must be freed using cgc_list_free().
+ * \note Lists obtained this way must be freed using cgc_list_destroy().
  * \note In case of failure, \c errno may be set to \c ENOMEM.
  * \note A call to this function may change the value of \c errno.
  */
-cgc_list * cgc_list_new (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun);
+cgc_list * cgc_list_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun);
 
 /**
  * \brief Free a dynamically allocated cgc_list.
@@ -334,9 +334,9 @@ cgc_list * cgc_list_new (size_t element_size, cgc_copy_function copy_fun, cgc_cl
  * \note A call to this function may change the value of \c errno.
  * \note It is safe to pass a \c NULL to this function.
  * \warning It is strongly advised to use this function only of lists obtained
- * via cgc_list_new().
+ * via cgc_list_create().
  */
-void cgc_list_free (cgc_list * list);
+void cgc_list_destroy (cgc_list * list);
 
 /**
  * \brief Copy a list.
@@ -345,7 +345,7 @@ void cgc_list_free (cgc_list * list);
  * \relatesalso cgc_list
  * \note It is safe to pass a \c NULL to this function.
  * \retval NULL if the list could not be copied or \c list was \c NULL.
- * \note Lists obtained this way must be freed using cgc_list_free().
+ * \note Lists obtained this way must be freed using cgc_list_destroy().
  * \note A call to this function may change the value of \c errno.
  */
 cgc_list * cgc_list_copy (const cgc_list * list);

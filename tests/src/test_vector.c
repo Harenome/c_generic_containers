@@ -7,7 +7,7 @@ int main (int argc, char ** argv)
 {
     (void) argc; (void) argv;
 
-    cgc_vector * vector = cgc_vector_new (sizeof (int), NULL, NULL, 6);
+    cgc_vector * vector = cgc_vector_create (sizeof (int), NULL, NULL, 6);
 
     for (int i = 0; i < 10; ++i)
         cgc_vector_push_back (vector, & i);
@@ -36,11 +36,11 @@ int main (int argc, char ** argv)
     content = cgc_vector_at (vector, 0);
     for (unsigned int i = 0; i < cgc_vector_size (vector); ++i)
         printf ("%d ", content[i]);
-    cgc_vector_free (vector);
+    cgc_vector_destroy (vector);
 
 
     printf ("\n");
-    vector = cgc_vector_new (sizeof (int), NULL, NULL, 6);
+    vector = cgc_vector_create (sizeof (int), NULL, NULL, 6);
     for (int i = 0; i < 10; ++i)
         cgc_vector_push_back (vector, & i);
     for (int i = 0; i < 10; ++i)
@@ -49,7 +49,7 @@ int main (int argc, char ** argv)
             printf ("%d ", * j);
             free (j);
         }
-    cgc_vector_free (vector);
+    cgc_vector_destroy (vector);
 
     return 0;
 }

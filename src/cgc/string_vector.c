@@ -41,15 +41,15 @@ static void _cgc_str_clean (void * const content)
 // New, free.
 ////////////////////////////////////////////////////////////////////////////////
 
-cgc_string_vector * cgc_string_vector_new (size_t size)
+cgc_string_vector * cgc_string_vector_create (size_t size)
 {
-    return cgc_vector_new (sizeof (char **), NULL, _cgc_str_clean, size);
+    return cgc_vector_create (sizeof (char **), NULL, _cgc_str_clean, size);
 }
 
-void cgc_string_vector_free (cgc_string_vector * const vector)
+void cgc_string_vector_destroy (cgc_string_vector * const vector)
 {
     cgc_string_vector_clear (vector);
-    cgc_vector_free (vector);
+    cgc_vector_destroy (vector);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
