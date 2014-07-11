@@ -342,25 +342,27 @@ int cgc_list_erase (cgc_list * const list, size_t start, size_t end)
 {
     int error = cgc_check_pointer (list);
     if (! error)
+        error = start >= end || start > list->_size ? -1 : 0;
+
+    if (! error)
     {
         cgc_list_element * current = _cgc_list_element_at (list, start);
-
-        cgc_list_element * before_start = NULL;
         if (current != NULL)
-            before_start = current->_previous;
+        {
+            cgc_list_element * before_start = current->_previous;
+            current = _cgc_list_erase_until (list, current, end - start);
 
-        current = _cgc_list_erase_until (list, current, end - start);
+            if (before_start == NULL)
+                list->_first = before_start;
+            else
+                before_start->_next = current;
 
-        if (before_start == NULL)
-            list->_first = before_start;
-        else
-            before_start->_next = current;
+            if (current == NULL)
+                list->_last = before_start;
 
-        if (current == NULL)
-            list->_last = NULL;
-
-        size_t deleted = end >= list->_size ? start : end - start;
-        list->_size -= list->_size - deleted;
+            size_t deleted = end >= list->_size ? list->_size - start : end - start;
+            list->_size -= deleted;
+        }
     }
 
     return error;

@@ -522,8 +522,12 @@ int cgc_list_clear (cgc_list * list);
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
- * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
+ * \retval -1 if one of the arguments is invalid: either if list is \c NULL, if
+ * \c start > cgc_list_size(list) or if \c end < \c start. \c errno shall be set to
  * \c EINVAL.
+ * \pre cgc_list_size(\c list) > \c start
+ * \pre \c start < \c end
+ * \pre \c list != \c NULL
  */
 int cgc_list_erase (cgc_list * list, size_t start, size_t end);
 
