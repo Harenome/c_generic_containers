@@ -78,21 +78,7 @@ typedef struct cgc_list_element
  * If no copy function was provided at the list creation, a mere copy (using
  * \c memcpy) of the provided element will be done.
  *
- * ### Prototype
- * The prototype of this function must be:
- *
- *      int copy_function (const void *, void *);
- *
- * The first argument is the original element, while the second argument is the
- * destination (the copy).
- * This function shall assume the memory for the copy has already been allocated.
- *
- * ### When and how to define such functions
- * A copy function should be provided for elements which could hold pointers and
- * dynamically allocated memory.
- *
- * If a list is destined to store simple elements, it won't require a copy
- * function.
+ * For further information, see #cgc_copy_function.
  *
  * ## Cleaning function
  * A cleaning function may be required since the CGC List aims to be generic:
@@ -103,10 +89,7 @@ typedef struct cgc_list_element
  * Note that the function should free any dynamically allocated memory held by
  * the list element but should not free the aforementioned element.
  *
- * ### Prototype
- * The prototype of this function must be:
- *
- *      void clean_function (void *);
+ * For further information, set #cgc_clean_function.
  *
  * # CGC List creation and destruction
  * ## Dynamic allocation

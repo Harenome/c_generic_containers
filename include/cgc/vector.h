@@ -67,6 +67,8 @@
  * If no copy function was provided at the vector creation, a mere copy (using
  * \c memcpy) of the provided element will be done.
  *
+ * For further information, see #cgc_copy_function.
+ *
  * ## Cleaning function
  * A cleaning function may be required since the CGC Vector aims to be generic:
  * users should be able to store any type of element in the list. Elements could
@@ -75,6 +77,8 @@
  *
  * Note that the function should free any dynamically allocated memory held by
  * the element, but should not free the aforementioned element.
+ *
+ * For further information, see #cgc_clean_function.
  *
  * # CGC Vector creation and destruction
  * ## Dynamic allocation
