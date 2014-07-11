@@ -150,7 +150,10 @@ cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun,
 void cgc_vector_destroy (cgc_vector * const vector)
 {
     if (vector != NULL)
+    {
+        cgc_vector_clear (vector);
         free (vector->_content);
+    }
     free (vector);
 }
 
@@ -298,7 +301,7 @@ int cgc_vector_clear (cgc_vector * const vector)
 int cgc_vector_erase (cgc_vector * const vector, size_t start, size_t end)
 {
     int error = 0;
-    if (start > end || vector == NULL)
+    if (start > end || vector == NULL || start > vector->_size)
     {
         error = -1;
         errno = EINVAL;
