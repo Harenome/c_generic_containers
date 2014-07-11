@@ -27,18 +27,35 @@
 // Constants.
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief An arbitrary step value for vectors.
+ */
 static const size_t _DEFAULT_SIZE_STEP = 128;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Static utilities.
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Get the address of the element at index \c i.
+ * \param vector A pointer to a CGC Vector.
+ * \param i Index of the target.
+ * \return A pointer to the element.
+ * \pre \c vector != \c NULL.
+ */
 static inline void * _cgc_vector_address (const cgc_vector * const vector, size_t i)
 {
     char * v = vector->_content;
     return v + i * vector->_element_size;
 }
 
+/**
+ * \brief Resize a vector.
+ * \pparam vector A pointer to a CGC vector.
+ * \param new_size The new size of the vector.
+ * \retval 0.
+ * \pre vetor != NULL.
+ */
 static inline int _cgc_vector_grow (cgc_vector * const vector, size_t new_size)
 {
     void * new_content = realloc (vector->_content, new_size * vector->_element_size);
@@ -50,6 +67,14 @@ static inline int _cgc_vector_grow (cgc_vector * const vector, size_t new_size)
     return 0;
 }
 
+/**
+ * \brief Copy an element into a vector.
+ * \param vector A pointer to a CGC Vector.
+ * \param i Target index.
+ * \param element A pointer to the element of interest.
+ * \retval 0 in case of success.
+ * \pre vetor != NULL.
+ */
 static inline int _cgc_vector_copy_element (cgc_vector * const vector, size_t i, const void * const element)
 {
     int error = 0;
@@ -61,6 +86,13 @@ static inline int _cgc_vector_copy_element (cgc_vector * const vector, size_t i,
     return error;
 }
 
+/**
+ * \brief Shift some elements of a vector.
+ * \param vector A pointer to a CGC Vector.
+ * \param source Index of the source.
+ * \param destination Target index.
+ * \pre vetor != NULL.
+ */
 static inline void _cgc_vector_shift_elements (cgc_vector * const vector, size_t source, size_t destination)
 {
     void * start = _cgc_vector_address (vector, source);
@@ -69,6 +101,14 @@ static inline void _cgc_vector_shift_elements (cgc_vector * const vector, size_t
     memmove (new_start, start, vector->_element_size * (vector->_size - shift_start));
 }
 
+/**
+ * \brief Reset some elements of a vector.
+ * \param vector A pointer to a CGC Vector.
+ * \param start Start index.
+ * \param end End index.
+ * \pre \c start <= \c end.
+ * \pre vetor != NULL.
+ */
 static inline void _cgc_vector_reset_elements (cgc_vector * const vector, size_t start, size_t end)
 {
     size_t total_size = end - start;
