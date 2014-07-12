@@ -181,6 +181,14 @@ cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun,
  */
 void cgc_vector_destroy (cgc_vector * vector);
 
+int cgc_vector_init (cgc_vector * vector, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size);
+
+int cgc_vector_clean (cgc_vector * vector);
+
+cgc_vector * cgc_vector_copy (const cgc_vector * vector);
+
+int cgc_vector_copy_into (const cgc_vector * original, cgc_vector * destination);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////

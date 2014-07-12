@@ -122,22 +122,11 @@ static inline void _cgc_vector_reset_elements (cgc_vector * const vector, size_t
 
 cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size)
 {
-    size_t size_step = size != 0 ? size : _DEFAULT_SIZE_STEP;
-
     cgc_vector * vector = malloc (sizeof * vector);
     if (vector != NULL)
     {
-        vector->_content = malloc (size_step * element_size);
-        if (vector->_content != NULL)
-        {
-            vector->_size = 0;
-            vector->_max_size = size_step;
-            vector->_size_step = size_step;
-            vector->_element_size = element_size;
-            vector->_copy_fun = copy_fun;
-            vector->_clean_fun = clean_fun;
-        }
-        else
+        int error = cgc_vector_init (vector, element_size, copy_fun, clean_fun, size);
+        if (error)
         {
             free (vector);
             vector = NULL;
@@ -151,10 +140,78 @@ void cgc_vector_destroy (cgc_vector * const vector)
 {
     if (vector != NULL)
     {
-        cgc_vector_clear (vector);
+        cgc_vector_clean (vector);
         free (vector->_content);
     }
     free (vector);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Initialization and cleaning.
+////////////////////////////////////////////////////////////////////////////////
+
+int cgc_vector_init (cgc_vector * vector, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size)
+{
+    int error = cgc_check_pointer (vector);
+
+    if (! error)
+    {
+        size_t size_step = size != 0 ? size : _DEFAULT_SIZE_STEP;
+        vector->_content = malloc (size_step * element_size);
+        if (vector->_content != NULL)
+        {
+            vector->_size = 0;
+            vector->_max_size = size_step;
+            vector->_size_step = size_step;
+            vector->_element_size = element_size;
+            vector->_copy_fun = copy_fun;
+            vector->_clean_fun = clean_fun;
+        }
+        else
+            error = -2;
+    }
+
+    return error;
+}
+
+int cgc_vector_clean (cgc_vector * vector)
+{
+    return cgc_vector_clear (vector);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Copy.
+////////////////////////////////////////////////////////////////////////////////
+
+cgc_vector * cgc_vector_copy (const cgc_vector * vector)
+{
+    cgc_vector * copy = NULL;
+    if (vector != NULL)
+    {
+        copy = malloc (sizeof * copy);
+        if (vector != NULL)
+            cgc_vector_copy_into (vector, copy);
+    }
+    return copy;
+}
+
+int cgc_vector_copy_into (const cgc_vector * original, cgc_vector * destination)
+{
+    int error = cgc_check_pointer (original);
+    if (! error)
+        error = cgc_check_pointer (destination);
+
+    if (! error)
+        error = cgc_vector_init (destination, original->_element_size, original->_copy_fun, original->_clean_fun, original->_size_step);
+
+    if (! error && ! cgc_vector_is_empty (original))
+    {
+        size_t size = cgc_vector_size (original);
+        for (size_t i = 0; i < size; ++i)
+            cgc_vector_push_back (destination, cgc_vector_at (original, i));
+    }
+
+    return error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

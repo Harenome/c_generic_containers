@@ -37,12 +37,12 @@ int main (int argc, char ** argv)
     for (unsigned int i = 0; i < cgc_vector_size (vector); ++i)
         printf ("%d ", content[i]);
     cgc_vector_destroy (vector);
-
-
     printf ("\n");
+
     vector = cgc_vector_create (sizeof (int), NULL, NULL, 6);
     for (int i = 0; i < 10; ++i)
         cgc_vector_push_back (vector, & i);
+    cgc_vector * vector_2 = cgc_vector_copy (vector);
     for (int i = 0; i < 10; ++i)
         {
             int * j = cgc_vector_pop_front (vector);
@@ -50,6 +50,14 @@ int main (int argc, char ** argv)
             free (j);
         }
     cgc_vector_destroy (vector);
+    printf ("\n");
+
+    content = cgc_vector_at (vector_2, 0);
+    for (unsigned int i = 0; i < cgc_vector_size (vector_2); ++i)
+        printf ("%d ", content[i]);
+    printf ("\n");
+
+    cgc_vector_destroy (vector_2);
 
     return 0;
 }
