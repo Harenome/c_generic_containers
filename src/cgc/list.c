@@ -149,7 +149,7 @@ static inline cgc_list_element * _cgc_list_erase_until (cgc_list * const list, c
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// New, free, copy.
+// Dynamic creation and destruction.
 ////////////////////////////////////////////////////////////////////////////////
 
 cgc_list * cgc_list_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun)
@@ -170,19 +170,9 @@ void cgc_list_destroy (cgc_list * const list)
     }
 }
 
-cgc_list * cgc_list_copy (const cgc_list * const list)
-{
-    cgc_list * copy = NULL;
-    if (list != NULL)
-    {
-        copy = cgc_list_create (list->_element_size, list->_copy_fun, list->_clean_fun);
-        if (! cgc_list_is_empty (list))
-            for (cgc_list_element * e = list->_first; e != NULL; e = e->_next)
-                cgc_list_push_back (copy, e->_content);
-    }
-
-    return copy;
-}
+////////////////////////////////////////////////////////////////////////////////
+// Initialization and cleaning.
+////////////////////////////////////////////////////////////////////////////////
 
 int cgc_list_init (cgc_list * const list, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun)
 {
@@ -197,6 +187,38 @@ int cgc_list_init (cgc_list * const list, size_t element_size, cgc_copy_function
 int cgc_list_clean (cgc_list * const list)
 {
     return cgc_list_clear (list);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Copy.
+////////////////////////////////////////////////////////////////////////////////
+
+cgc_list * cgc_list_copy (const cgc_list * const list)
+{
+    cgc_list * copy = NULL;
+    if (list != NULL)
+    {
+        copy = cgc_list_create (list->_element_size, list->_copy_fun, list->_clean_fun);
+        if (copy != NULL)
+            cgc_list_copy_into (list, copy);
+    }
+
+    return copy;
+}
+
+int cgc_list_copy_into (const cgc_list * const original, cgc_list * const destination)
+{
+    int error = cgc_check_pointer (original);
+    if (! error)
+        error = cgc_check_pointer (destination);
+
+    if (! error && ! cgc_list_is_empty (original))
+    {
+        cgc_list_init (destination, original->_element_size, original->_copy_fun, original->_clean_fun);
+        for (cgc_list_element * e = original->_first; e != NULL; e = e->_next)
+            cgc_list_push_back (destination, e->_content);
+    }
+    return error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

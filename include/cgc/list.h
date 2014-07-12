@@ -187,7 +187,7 @@ typedef struct cgc_list_element
  * library's \c free.
  *
  * ## Copying a list
- * Lists can be copied using cgc_list_copy().
+ * Lists can be copied using cgc_list_copy() or cgc_list_copy_into().
  *
  * # List properties
  * One can test whether a list is empty with cgc_list_is_empty() and get the
@@ -292,7 +292,7 @@ typedef struct cgc_list
 } cgc_list;
 
 ////////////////////////////////////////////////////////////////////////////////
-// New, free, copy, initialization, cleaning.
+// Dynamic creation and destruction.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -321,17 +321,9 @@ cgc_list * cgc_list_create (size_t element_size, cgc_copy_function copy_fun, cgc
  */
 void cgc_list_destroy (cgc_list * list);
 
-/**
- * \brief Copy a list.
- * \param list List.
- * \return A pointer to the copy in case of success. \c NULL in case of failure.
- * \relatesalso cgc_list
- * \note It is safe to pass a \c NULL to this function.
- * \retval NULL if the list could not be copied or \c list was \c NULL.
- * \note Lists obtained this way must be freed using cgc_list_destroy().
- * \note A call to this function may change the value of \c errno.
- */
-cgc_list * cgc_list_copy (const cgc_list * list);
+////////////////////////////////////////////////////////////////////////////////
+// Initialization and cleaning.
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Initialize a cgc_list.
@@ -356,8 +348,37 @@ int cgc_list_init (cgc_list * list, size_t element_size, cgc_copy_function copy_
  * \retval 0 in case of success.
  * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
  * \c EINVAL.
+ * \relatesalso cc_list
  */
 int cgc_list_clean (cgc_list * list);
+
+////////////////////////////////////////////////////////////////////////////////
+// Copy.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Copy a list.
+ * \param list List.
+ * \return A pointer to the copy in case of success. \c NULL in case of failure.
+ * \relatesalso cgc_list
+ * \note It is safe to pass a \c NULL to this function.
+ * \retval NULL if the list could not be copied or \c list was \c NULL.
+ * \note Lists obtained this way must be freed using cgc_list_destroy().
+ * \note A call to this function may change the value of \c errno.
+ */
+cgc_list * cgc_list_copy (const cgc_list * list);
+
+/**
+ * \brief Copy a cgc_list into \c destination.
+ * \param[in] original The original.
+ * \param[in,out] destination The destination of the copy.
+ * \retval 0 in case of success.
+ * \retval -1 if one of the arguments is \c NULL. \c errno may be set to \c EINVAL.
+ * \relatesalso cc_list
+ * \warning This function will overwrite the destination! It is up to the user to
+ * first clean \c destination if needed.
+ */
+int cgc_list_copy_into (const cgc_list * original, cgc_list * destination);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
