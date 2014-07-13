@@ -153,7 +153,7 @@ typedef struct cgc_vector
 } cgc_vector;
 
 ////////////////////////////////////////////////////////////////////////////////
-// New, free.
+// Dynamic creation and destruction.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -181,12 +181,59 @@ cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun,
  */
 void cgc_vector_destroy (cgc_vector * vector);
 
+////////////////////////////////////////////////////////////////////////////////
+// Initialization and cleaning.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Initialize a cgc_vector.
+ * \param[in,out] vector Vector.
+ * \param[in] element_size Element size.
+ * \param[in] copy_fun Copy function.
+ * \param[în] clean_fun Cleaning function.
+ * \param[in] size Vector size.
+ * \relatesalso cgc_vector
+ * \retval 0 in case of success.
+ * \retval -1 if one of the argumens is \c NULL. \c errno shall be set to
+ * \retval -2 in case of failure because of \c malloc.
+ * \c EINVAL.
+ */
 int cgc_vector_init (cgc_vector * vector, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size);
 
+/**
+ * \brief Clean a cgc_vector.
+ * \param vector Vector.
+ * \retval 0 in case of success.
+ * \retval -1 if \c vector is \c NULL. \c errno shall be set to \c EINVAL.
+ * \relatesalso cgc_vector
+ */
 int cgc_vector_clean (cgc_vector * vector);
 
+////////////////////////////////////////////////////////////////////////////////
+// Copy.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Copy a vector.
+ * \param vector Vector.
+ * \return A pointer to the copy in case of success. \c NULL in case of failure.
+ * \retval NULL if the vector could not be copied or \c vector is \c NULL.
+ * \note Vectors obtained this way must be destroyed using cgc_vector_destroy().
+ * \note A call to this function may change the value of \c errno.
+ */
 cgc_vector * cgc_vector_copy (const cgc_vector * vector);
 
+/**
+ * \brief Copy a vector into \c destination.
+ * \param original The original.
+ * \param destination The destination of the copy.
+ * \revtal 0 in case of success.
+ * \retval -1 if one of the arguments is \c NULL. \c errno may be set to
+ * \c EINVAL.
+ * \relatesalso cgc_vector
+ * \warning This function will overwrite the destination! It is up to the user
+ * to first clean \c destination, if needed.
+ */
 int cgc_vector_copy_into (const cgc_vector * original, cgc_vector * destination);
 
 ////////////////////////////////////////////////////////////////////////////////
