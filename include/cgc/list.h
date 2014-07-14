@@ -34,12 +34,22 @@
 #include "cgc/common.h"
 #include "cgc/types.h"
 
+/**
+ * \defgroup lists_group Lists
+ */
+
+/**
+ * \defgroup cgc_list_group CGC Lists
+ * \ingroup lists_group
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 // Typedefs.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief CGC List element.
+ * \ingroup cgc_list_group
  *
  * List elements are used internally to store the elements of lists. An element
  * contains a content and is linked to its predecessor (if any) in the list and
@@ -47,13 +57,14 @@
  */
 typedef struct cgc_list_element
 {
-    void * _content;    /**<- Content. */
-    void * _next;       /**<- Next element. */
-    void * _previous;   /**<- Previous element. */
+    void * _content;    /**< Content. */
+    void * _next;       /**< Next element. */
+    void * _previous;   /**< Previous element. */
 } cgc_list_element;
 
 /**
  * \brief CGC List.
+ * \ingroup cgc_list_group
  *
  * CGC Lists are generic lists. These lists are implemented as doubly linked
  * lists.
@@ -76,9 +87,11 @@ typedef struct cgc_list_element
  * necessary to supply a way to properly copy elements into the list.
  *
  * If no copy function was provided at the list creation, a mere copy (using
- * \c memcpy) of the provided element will be done.
+ * \c memcpy and the size in bytes provided at the list creation) of the
+ * provided element will be done.
  *
- * For further information, see #cgc_copy_function.
+ * For further information on this function and how to define it, see
+ * #cgc_copy_function.
  *
  * ## Cleaning function
  * A cleaning function may be required since the CGC List aims to be generic:
@@ -89,12 +102,23 @@ typedef struct cgc_list_element
  * Note that the function should free any dynamically allocated memory held by
  * the list element but should not free the aforementioned element.
  *
- * For further information, set #cgc_clean_function.
+ * For further information on this function and how to define it, see
+ * #cgc_clean_function.
  *
- * # CGC List creation and destruction
+ * # CGC List creation, destruction and copy
+ * ## Summary
+ * Creation, destruction and copy of cgc_list can be done dynamically or
+ * statically.
+ *
+ * Operation                 | Dynamic version     | Static version
+ * --------------------------|---------------------|----------------------
+ * Creation / Initialization | cgc_list_create()   | cgc_list_init()
+ * Destruction / Cleaning    | cgc_list_destroy()  | cgc_list_clean()
+ * Copy                      | cgc_list_copy()     | cgc_list_copy_into()
+ *
  * ## Dynamic allocation
- * CGC Lists can be dynamically created using cgc_list_create(). Such lists must be
- * destroyed using cgc_list_destroy().
+ * CGC Lists can be dynamically created using cgc_list_create(). Such lists must
+ * be destroyed using cgc_list_destroy().
  *
  * ### Simple examples
  * #### Integer list
@@ -176,22 +200,47 @@ typedef struct cgc_list_element
  * it with cgc_list_init(), and clean it with cgc_list_clean().
  * For instance:
  *
- *      cgc_list list;
- *      cgc_list_init (& list, sizeof (int), copy_fun, clean_fun);
- *      // Use the list.
- *      cgc_list_clean (& list);
+ *     cgc_list list;
+ *     cgc_list_init (& list, sizeof (int), copy_fun, clean_fun);
+ *     // ...
+ *     // Use the list.
+ *     // ...
+ *     cgc_list_clean (& list);
  *
  * ## Note on dynamic lists and cleaning
  * Note that cgc_list_destroy() actually is equivalent to calling cgc_list_clean()
  * and then manually freeing the dynamically allocated list using the standard
  * library's \c free.
  *
- * ## Copying a list
+ * More clearly:
+ *
+ *     // This example (recommended)...
+ *     cgc_list * list = cgc_list_create (...);
+ *     cgc_list_destroy (list);
+ *
+ *     // ...is equivalent to this one (not recommended)...
+ *     cgc_list * list = cgc_list_create (...);
+ *     cgc_list_clean (list);
+ *     free (list);
+ *
+ *     // ...but be very careful! Don't destroy static lists!
+ *     // Only use cgc_list_clean() !
+ *     // The following example is wrong!
+ *     cgc_list list;
+ *     cgc_list_init (& list, ...);
+ *     cgc_list_destroy (& list);
+ *
+ * ## Copy
  * Lists can be copied using cgc_list_copy() or cgc_list_copy_into().
+ * cgc_list_copy() will dynamically create a copy of a list. This copy must
+ * be destroyed using cgc_list_destroy(). On the other hand, cgc_list_copy_into()
+ * copies a list into an existing one.
  *
  * # List properties
- * One can test whether a list is empty with cgc_list_is_empty() and get the
- * size of a list with cgc_list_size().
+ * Property     | Function
+ * -------------|---------------------
+ * Emptiness    | cgc_list_is_empty()
+ * Size         | cgc_list_size()
  *
  * # Element access
  * ## Without changing the list
@@ -283,12 +332,12 @@ typedef struct cgc_list_element
  */
 typedef struct cgc_list
 {
-    cgc_list_element * _first;          /**<- First element. */
-    cgc_list_element * _last;           /**<- Last element. */
-    cgc_clean_function _clean_fun;      /**<- Clean function. */
-    cgc_copy_function _copy_fun;        /**<- Copy function. */
-    size_t _size;                       /**<- Size. */
-    size_t _element_size;               /**<- Element size. */
+    cgc_list_element * _first;          /**< First element. */
+    cgc_list_element * _last;           /**< Last element. */
+    cgc_clean_function _clean_fun;      /**< Clean function. */
+    cgc_copy_function _copy_fun;        /**< Copy function. */
+    size_t _size;                       /**< Size. */
+    size_t _element_size;               /**< Element size. */
 } cgc_list;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -342,13 +391,13 @@ int cgc_list_init (cgc_list * list, size_t element_size, cgc_copy_function copy_
 
 /**
  * \brief Clean a cgc_list.
- * \param list List.
+ * \param[in,out] list List.
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
  * \retval 0 in case of success.
  * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
  * \c EINVAL.
- * \relatesalso cc_list
+ * \relatesalso cgc_list
  */
 int cgc_list_clean (cgc_list * list);
 
@@ -374,7 +423,7 @@ cgc_list * cgc_list_copy (const cgc_list * list);
  * \param[in,out] destination The destination of the copy.
  * \retval 0 in case of success.
  * \retval -1 if one of the arguments is \c NULL. \c errno may be set to \c EINVAL.
- * \relatesalso cc_list
+ * \relatesalso cgc_list
  * \warning This function will overwrite the destination! It is up to the user to
  * first clean \c destination if needed.
  */
@@ -482,7 +531,7 @@ int cgc_list_push_back (cgc_list * list, const void * element);
 
 /**
  * \brief Pop the front.
- * \param list List.
+ * \param[in,out] list List.
  * \return First element.
  * \relatesalso cgc_list
  * \warning It is up to the user to free the returned element once unneeded.
@@ -493,7 +542,7 @@ void * cgc_list_pop_front (cgc_list * list);
 
 /**
  * \brief Pop the back.
- * \param list List.
+ * \param[in,out] list List.
  * \return Last element.
  * \relatesalso cgc_list
  * \warning It is up to the user to free the returned element once unneeded.
@@ -524,7 +573,7 @@ int cgc_list_insert (cgc_list * list, size_t i, const void * element);
 
 /**
  * \brief Clear a list.
- * \param list List.
+ * \param[in,out] list List.
  * \relatesalso cgc_list
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.

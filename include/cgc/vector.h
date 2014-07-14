@@ -33,12 +33,17 @@
 #include "cgc/common.h"
 #include "cgc/types.h"
 
+/**
+ * \defgroup vectors_group Vectors
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 // Typedef.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief CGC vector.
+ * \ingroup vectors_group
  *
  * CGC Vectors are generic vectors. Elements are stored contiguously inside
  * the vector.
@@ -190,7 +195,7 @@ void cgc_vector_destroy (cgc_vector * vector);
  * \param[in,out] vector Vector.
  * \param[in] element_size Element size.
  * \param[in] copy_fun Copy function.
- * \param[în] clean_fun Cleaning function.
+ * \param[in] clean_fun Cleaning function.
  * \param[in] size Vector size.
  * \relatesalso cgc_vector
  * \retval 0 in case of success.
@@ -202,7 +207,7 @@ int cgc_vector_init (cgc_vector * vector, size_t element_size, cgc_copy_function
 
 /**
  * \brief Clean a cgc_vector.
- * \param vector Vector.
+ * \param[in,out] vector Vector.
  * \retval 0 in case of success.
  * \retval -1 if \c vector is \c NULL. \c errno shall be set to \c EINVAL.
  * \relatesalso cgc_vector
@@ -225,9 +230,9 @@ cgc_vector * cgc_vector_copy (const cgc_vector * vector);
 
 /**
  * \brief Copy a vector into \c destination.
- * \param original The original.
- * \param destination The destination of the copy.
- * \revtal 0 in case of success.
+ * \param[in] original The original.
+ * \param[in,out] destination The destination of the copy.
+ * \retval 0 in case of success.
  * \retval -1 if one of the arguments is \c NULL. \c errno may be set to
  * \c EINVAL.
  * \relatesalso cgc_vector
@@ -318,8 +323,8 @@ void * cgc_vector_back (const cgc_vector * vector);
 
 /**
  * \brief Push front an element.
- * \param vector Vector.
- * \param element Element.
+ * \param[in,out] vector Vector.
+ * \param[in] element Element.
  * \retval 0 in case of success
  * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
  * \c EINVAL.
@@ -333,8 +338,8 @@ int cgc_vector_push_front (cgc_vector * vector, const void * element);
 
 /**
  * \brief Push back an element.
- * \param vector Vector.
- * \param element Element.
+ * \param[in,out] vector Vector.
+ * \param[in] element Element.
  * \retval 0 in case of success
  * \retval -1 if one of the arguments is \c NULL. \c errno shall be set to
  * \c EINVAL.
@@ -348,7 +353,7 @@ int cgc_vector_push_back (cgc_vector * vector, const void * element);
 
 /**
  * \brief Pop front an element.
- * \param vector Vector.
+ * \param[in,out] vector Vector.
  * \return element
  * \relatesalso cgc_vector
  */
@@ -356,7 +361,7 @@ void * cgc_vector_pop_front (cgc_vector * vector);
 
 /**
  * \brief Pop back an element.
- * \param vector Vector.
+ * \param[in,out] vector Vector.
  * \return element
  * \relatesalso cgc_vector
  */
@@ -364,9 +369,9 @@ void * cgc_vector_pop_back (cgc_vector * vector);
 
 /**
  * \brief Insert an element at index \c i.
- * \param vector Vector.
- * \param i Index.
- * \param element Element.
+ * \param[in,out] vector Vector.
+ * \param[in] i Index.
+ * \param[in] element Element.
  * \relatesalso cgc_vector
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
@@ -382,7 +387,7 @@ int cgc_vector_insert (cgc_vector * vector, size_t i, const void * element);
 
 /**
  * \brief Clear the vector.
- * \param vector
+ * \param[in,out] vector
  * \relatesalso cgc_vector
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.
@@ -393,9 +398,9 @@ int cgc_vector_clear (cgc_vector * vector);
 
 /**
  * \brief Erase the content from \c start to \c end.
- * \param vector Vector.
- * \param start Start.
- * \param end End.
+ * \param[in,out] vector Vector.
+ * \param[in] start Start.
+ * \param[in] end End.
  * \relatesalso cgc_vector
  * \return This function shall return 0 in case of success, a negative integer
  * in case of failure.

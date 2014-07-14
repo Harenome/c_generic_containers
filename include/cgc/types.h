@@ -25,7 +25,12 @@
 #define _CGC_TYPES_H_
 
 /**
+ * \defgroup cgc_types_group CGC Types
+ */
+
+/**
  * \brief Clean functions.
+ * \ingroup cgc_types_group
  *
  * # Synopsis
  * Among the necessary tools for CGC containers is the clean function.
@@ -70,6 +75,7 @@ typedef void (* cgc_clean_function) (void *);
 
 /**
  * \brief Copy functions.
+ * \ingroup cgc_types_group
  *
  * # Synopsis
  * Among the necessary tools for CGC containers is the copy function. In order
@@ -90,6 +96,9 @@ typedef void (* cgc_clean_function) (void *);
  * argument is the destination of the copy.
  *
  * This function shall assume the memory for the copy has already been allocated.
+ *
+ * In case of errors, the function shall return negative integers lower than or
+ * equal to \c -3.
  *
  * # Simple example
  * Imagine a CGC container should store the following struct:
@@ -120,7 +129,7 @@ typedef void (* cgc_clean_function) (void *);
  *         if (copy->_dynamic != NULL)
  *             copy->_dynamic = original->_dynamic;
  *         else
- *             error = -1;
+ *             error = -3;
  *
  *         return error;
  *     }
@@ -133,16 +142,19 @@ typedef int (* cgc_copy_function) (const void *, void *);
 
 /**
  * \brief Unary operation functions.
+ * \ingroup cgc_types_group
  */
 typedef int (* cgc_unary_op_function) (void *);
 
 /**
  * \brief Binary operation functions.
+ * \ingroup cgc_types_group
  */
 typedef int (* cgc_binary_op_right_function) (const void *, void *);
 
 /**
  * \brief Binary operation functions.
+ * \ingroup cgc_types_group
  */
 typedef int (* cgc_binary_op_left_function) (void *, const void *);
 
