@@ -51,12 +51,13 @@ all : libcgc.a
 
 ## CGC
 cgc/list.o: cgc/list.c cgc/list.h cgc/types.h cgc/common.h
+cgc/queue.o: cgc/queue.c cgc/queue.h cgc/types.h cgc/common.h cgc/list.h
 cgc/vector.o: cgc/vector.c cgc/vector.h cgc/types.h cgc/common.h
 cgc/string_vector.o: cgc/string_vector.c cgc/string_vector.h cgc/types.h cgc/common.h
 
-libcgc.a: cgc/list.o cgc/vector.o cgc/string_vector.o | lib_dir
+libcgc.a: cgc/list.o cgc/vector.o cgc/string_vector.o cgc/queue.o | lib_dir
 	ar crvs $(PATH_LIB)/libcgc.a $(PATH_OBJ)/cgc/list.o $(PATH_OBJ)/cgc/vector.o \
-		$(PATH_OBJ)/cgc/string_vector.o
+		$(PATH_OBJ)/cgc/string_vector.o $(PATH_OBJ)/cgc/queue.o
 
 ## Tests
 test_list.o: test_list.c cgc/list.h
