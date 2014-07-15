@@ -37,6 +37,6 @@ static const unsigned int CGC_VERSION_MINOR = 4;
 /**
  * \brief CGC Version, patch.
  */
-static const unsigned int CGC_VERSION_PATCH = 1;
+static const unsigned int CGC_VERSION_PATCH = 2;
 
 #endif /* _CGC_VERSION_H_ */
