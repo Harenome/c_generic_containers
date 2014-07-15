@@ -242,6 +242,23 @@ cgc_vector * cgc_vector_copy (const cgc_vector * vector);
 int cgc_vector_copy_into (const cgc_vector * original, cgc_vector * destination);
 
 ////////////////////////////////////////////////////////////////////////////////
+// Swap.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Swap the contents of two vectors.
+ * \param[in,out] a First vector.
+ * \param[in,out] b Second vector.
+ * \relatesalso cgc_vector
+ * \pre a != NULL && b != NULL
+ * \return 0 in case of success.
+ * \return -1 if at least of the argumes is \c NULL. \c errno may be set to
+ * \c EINVAL.
+ * \note A cal to this function may change the value of \c errno.
+ */
+int cgc_vector_swap (cgc_vector * a, cgc_vector * b);
+
+////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////
 

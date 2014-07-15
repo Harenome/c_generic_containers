@@ -430,6 +430,23 @@ cgc_list * cgc_list_copy (const cgc_list * list);
 int cgc_list_copy_into (const cgc_list * original, cgc_list * destination);
 
 ////////////////////////////////////////////////////////////////////////////////
+// Swap.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Swap the contents of two lists.
+ * \param[in,out] a First list.
+ * \param[in,out] b Second list.
+ * \relatesalso cgc_list
+ * \pre a != NULL && b != NULL
+ * \return 0 in case of success.
+ * \return -1 if at least of the argumes is \c NULL. \c errno may be set to
+ * \c EINVAL.
+ * \note A cal to this function may change the value of \c errno.
+ */
+int cgc_list_swap (cgc_list * a, cgc_list * b);
+
+////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////
 
