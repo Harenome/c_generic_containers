@@ -212,9 +212,11 @@ int cgc_list_copy_into (const cgc_list * const original, cgc_list * const destin
     if (! error)
         error = cgc_check_pointer (destination);
 
+    if (! error)
+        error = cgc_list_init (destination, original->_element_size, original->_copy_fun, original->_clean_fun);
+
     if (! error && ! cgc_list_is_empty (original))
     {
-        cgc_list_init (destination, original->_element_size, original->_copy_fun, original->_clean_fun);
         for (cgc_list_element * e = original->_first; e != NULL; e = e->_next)
             cgc_list_push_back (destination, e->_content);
     }
