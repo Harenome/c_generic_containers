@@ -13,7 +13,7 @@ static inline void print_vector (cgc_string_vector * v)
 int main (int argc, char ** argv)
 {
     (void) argc; (void) argv;
-    cgc_string_vector * vector = cgc_string_vector_new (1);
+    cgc_string_vector * vector = cgc_string_vector_create (1);
 
     cgc_string_vector_push_back (vector, "abcde");
     cgc_string_vector_push_back (vector, "fghij");
@@ -29,7 +29,7 @@ int main (int argc, char ** argv)
     print_vector (vector);
 
     free (last);
-    cgc_string_vector_free (vector);
+    cgc_string_vector_destroy (vector);
 
     return 0;
 }

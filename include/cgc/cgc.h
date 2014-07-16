@@ -1,5 +1,5 @@
 /**
- * \file version.h
+ * \file cgc.h
  * \author RAZANAJATO RANAIVOARIVONY Harenome
  * \date 2014
  * \copyright LGPLv3
@@ -21,22 +21,16 @@
  * and the GNU General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
  */
-#ifndef _CGC_VERSION_H_
-#define _CGC_VERSION_H_
+ #ifndef _CGC_H_
+ #define _CGC_H_
 
-/**
- * \brief CGC Version, major.
- */
-static const unsigned int CGC_VERSION_MAJOR = 0;
+/* Include everything. */
+#include "cgc/common.h"
+#include "cgc/types.h"
+#include "cgc/list.h"
+#include "cgc/queue.h"
+#include "cgc/stack.h"
+#include "cgc/vector.h"
+#include "cgc/version.h"
 
-/**
- * \brief CGC Version, minor.
- */
-static const unsigned int CGC_VERSION_MINOR = 5;
-
-/**
- * \brief CGC Version, patch.
- */
-static const unsigned int CGC_VERSION_PATCH = 0;
-
-#endif /* _CGC_VERSION_H_ */
+ #endif /* _CGC_H_ */

@@ -27,19 +27,36 @@
 // Constants.
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief An arbitrary step value for vectors.
+ */
 static const size_t _DEFAULT_SIZE_STEP = 128;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Static utilities.
 ////////////////////////////////////////////////////////////////////////////////
 
-static inline void * _cgc_vector_address (cgc_vector * vector, size_t i)
+/**
+ * \brief Get the address of the element at index \c i.
+ * \param vector A pointer to a CGC Vector.
+ * \param i Index of the target.
+ * \return A pointer to the element.
+ * \pre \c vector != \c NULL.
+ */
+static inline void * _cgc_vector_address (const cgc_vector * const vector, size_t i)
 {
     char * v = vector->_content;
     return v + i * vector->_element_size;
 }
 
-static inline int _cgc_vector_grow (cgc_vector * vector, size_t new_size)
+/**
+ * \brief Resize a vector.
+ * \pparam vector A pointer to a CGC vector.
+ * \param new_size The new size of the vector.
+ * \retval 0.
+ * \pre vetor != NULL.
+ */
+static inline int _cgc_vector_grow (cgc_vector * const vector, size_t new_size)
 {
     void * new_content = realloc (vector->_content, new_size * vector->_element_size);
     if (new_content != NULL)
@@ -50,13 +67,33 @@ static inline int _cgc_vector_grow (cgc_vector * vector, size_t new_size)
     return 0;
 }
 
-static inline void _cgc_vector_copy_element (cgc_vector * vector, size_t i, void * element)
+/**
+ * \brief Copy an element into a vector.
+ * \param vector A pointer to a CGC Vector.
+ * \param i Target index.
+ * \param element A pointer to the element of interest.
+ * \retval 0 in case of success.
+ * \pre vetor != NULL.
+ */
+static inline int _cgc_vector_copy_element (cgc_vector * const vector, size_t i, const void * const element)
 {
+    int error = 0;
     void * v = _cgc_vector_address (vector, i);
-    memcpy (v, element, vector->_element_size);
+    if (vector->_copy_fun != NULL)
+        error = vector->_copy_fun (element, v);
+    else
+        memcpy (v, element, vector->_element_size);
+    return error;
 }
 
-static inline void _cgc_vector_shift_elements (cgc_vector * vector, size_t source, size_t destination)
+/**
+ * \brief Shift some elements of a vector.
+ * \param vector A pointer to a CGC Vector.
+ * \param source Index of the source.
+ * \param destination Target index.
+ * \pre vetor != NULL.
+ */
+static inline void _cgc_vector_shift_elements (cgc_vector * const vector, size_t source, size_t destination)
 {
     void * start = _cgc_vector_address (vector, source);
     void * new_start = _cgc_vector_address (vector, destination);
@@ -64,26 +101,32 @@ static inline void _cgc_vector_shift_elements (cgc_vector * vector, size_t sourc
     memmove (new_start, start, vector->_element_size * (vector->_size - shift_start));
 }
 
+/**
+ * \brief Reset some elements of a vector.
+ * \param vector A pointer to a CGC Vector.
+ * \param start Start index.
+ * \param end End index.
+ * \pre \c start <= \c end.
+ * \pre vetor != NULL.
+ */
+static inline void _cgc_vector_reset_elements (cgc_vector * const vector, size_t start, size_t end)
+{
+    size_t total_size = end - start;
+    void * beginning = _cgc_vector_address (vector, start);
+    memset (beginning, 0, total_size * vector->_element_size);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // New, free.
 ////////////////////////////////////////////////////////////////////////////////
 
-cgc_vector * cgc_vector_new (size_t element_size, size_t size)
+cgc_vector * cgc_vector_create (size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size)
 {
-    size_t size_step = size != 0 ? size : _DEFAULT_SIZE_STEP;
-
     cgc_vector * vector = malloc (sizeof * vector);
     if (vector != NULL)
     {
-        vector->_content = malloc (size_step * element_size);
-        if (vector->_content != NULL)
-        {
-            vector->_size = 0;
-            vector->_max_size = size_step;
-            vector->_size_step = size_step;
-            vector->_element_size = element_size;
-        }
-        else
+        int error = cgc_vector_init (vector, element_size, copy_fun, clean_fun, size);
+        if (error)
         {
             free (vector);
             vector = NULL;
@@ -93,28 +136,118 @@ cgc_vector * cgc_vector_new (size_t element_size, size_t size)
     return vector;
 }
 
-void cgc_vector_free (cgc_vector * vector)
+void cgc_vector_destroy (cgc_vector * const vector)
 {
     if (vector != NULL)
+    {
+        cgc_vector_clean (vector);
         free (vector->_content);
+    }
     free (vector);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Initialization and cleaning.
+////////////////////////////////////////////////////////////////////////////////
+
+int cgc_vector_init (cgc_vector * vector, size_t element_size, cgc_copy_function copy_fun, cgc_clean_function clean_fun, size_t size)
+{
+    int error = cgc_check_pointer (vector);
+
+    if (! error)
+    {
+        size_t size_step = size != 0 ? size : _DEFAULT_SIZE_STEP;
+        vector->_content = malloc (size_step * element_size);
+        if (vector->_content != NULL)
+        {
+            vector->_size = 0;
+            vector->_max_size = size_step;
+            vector->_size_step = size_step;
+            vector->_element_size = element_size;
+            vector->_copy_fun = copy_fun;
+            vector->_clean_fun = clean_fun;
+        }
+        else
+            error = -2;
+    }
+
+    return error;
+}
+
+int cgc_vector_clean (cgc_vector * vector)
+{
+    return cgc_vector_clear (vector);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Copy.
+////////////////////////////////////////////////////////////////////////////////
+
+cgc_vector * cgc_vector_copy (const cgc_vector * vector)
+{
+    cgc_vector * copy = NULL;
+    if (vector != NULL)
+    {
+        copy = malloc (sizeof * copy);
+        if (vector != NULL)
+            cgc_vector_copy_into (vector, copy);
+    }
+    return copy;
+}
+
+int cgc_vector_copy_into (const cgc_vector * original, cgc_vector * destination)
+{
+    int error = cgc_check_pointer (original);
+    if (! error)
+        error = cgc_check_pointer (destination);
+
+    if (! error)
+        error = cgc_vector_init (destination, original->_element_size, original->_copy_fun, original->_clean_fun, original->_size_step);
+
+    if (! error && ! cgc_vector_is_empty (original))
+    {
+        size_t size = cgc_vector_size (original);
+        for (size_t i = 0; i < size; ++i)
+            cgc_vector_push_back (destination, cgc_vector_at (original, i));
+    }
+
+    return error;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Swap.
+////////////////////////////////////////////////////////////////////////////////
+
+int cgc_vector_swap (cgc_vector * const a, cgc_vector * const b)
+{
+    int error = cgc_check_pointer (a);
+    if (! error)
+        error = cgc_check_pointer (b);
+
+    if (! error)
+    {
+        cgc_vector tmp = * a;
+        * a = * b;
+        * b = tmp;
+    }
+    return error;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Properties getters.
 ////////////////////////////////////////////////////////////////////////////////
 
-bool cgc_vector_is_empty (const cgc_vector * vector)
+bool cgc_vector_is_empty (const cgc_vector * const vector)
 {
     return vector->_size == 0;
 }
 
-size_t cgc_vector_size (const cgc_vector * vector)
+size_t cgc_vector_size (const cgc_vector * const vector)
 {
     return vector->_size;
 }
 
-size_t cgc_vector_max_size (const cgc_vector * vector)
+size_t cgc_vector_max_size (const cgc_vector * const vector)
 {
     return vector->_max_size;
 }
@@ -123,17 +256,17 @@ size_t cgc_vector_max_size (const cgc_vector * vector)
 // Access.
 ////////////////////////////////////////////////////////////////////////////////
 
-void * cgc_vector_at (cgc_vector * vector, size_t i)
+void * cgc_vector_at (const cgc_vector * const vector, size_t i)
 {
     return _cgc_vector_address (vector, i);
 }
 
-void * cgc_vector_front (cgc_vector * vector)
+void * cgc_vector_front (const cgc_vector * const vector)
 {
     return _cgc_vector_address (vector, 0);
 }
 
-void * cgc_vector_back (cgc_vector * vector)
+void * cgc_vector_back (const cgc_vector * const vector)
 {
     size_t back_index = vector->_size > 0 ? vector->_size - 1 : 0;
     return _cgc_vector_address (vector, back_index);
@@ -143,34 +276,48 @@ void * cgc_vector_back (cgc_vector * vector)
 // Modifiers.
 ////////////////////////////////////////////////////////////////////////////////
 
-int cgc_vector_push_front (cgc_vector * vector, void * element)
+static inline int _cgc_vector_push_prelude (const cgc_vector * const vector, const void * const element)
 {
-    return cgc_vector_insert (vector, 0, element);
+    int error = cgc_check_pointer (vector);
+    if (! error)
+        error = cgc_check_pointer (element);
+
+    return error;
 }
 
-int cgc_vector_push_back (cgc_vector * vector, void * element)
+int cgc_vector_push_front (cgc_vector * const vector, const void * const element)
 {
-    if (vector != NULL)
+    int error = _cgc_vector_push_prelude (vector, element);
+    if (! error)
+        error = cgc_vector_insert (vector, 0, element);
+
+    return error;
+}
+
+int cgc_vector_push_back (cgc_vector * const vector, const void * const element)
+{
+    int error = _cgc_vector_push_prelude (vector, element);
+    if (! error)
     {
         if (vector->_size >= vector->_max_size)
             _cgc_vector_grow (vector, vector->_max_size + vector->_size_step);
 
-        _cgc_vector_copy_element (vector, vector->_size, element);
+        error = _cgc_vector_copy_element (vector, vector->_size, element);
         vector->_size++;
     }
-    return 0;
+    return error;
 }
 
-void * cgc_vector_pop_front (cgc_vector * vector)
+void * cgc_vector_pop_front (cgc_vector * const vector)
 {
     void * element = NULL;
     if (vector != NULL)
     {
-        void * back = cgc_vector_back (vector);
+        void * front = cgc_vector_front (vector);
         element = malloc (vector->_element_size);
         if (element != NULL)
         {
-            memcpy (element, back, vector->_element_size);
+            memcpy (element, front, vector->_element_size);
             vector->_size--;
             _cgc_vector_shift_elements (vector, 1, 0);
         }
@@ -178,7 +325,7 @@ void * cgc_vector_pop_front (cgc_vector * vector)
     return element;
 }
 
-void * cgc_vector_pop_back (cgc_vector * vector)
+void * cgc_vector_pop_back (cgc_vector * const vector)
 {
     void * element = NULL;
     if (vector != NULL)
@@ -194,9 +341,10 @@ void * cgc_vector_pop_back (cgc_vector * vector)
     return element;
 }
 
-int cgc_vector_insert (cgc_vector * vector, size_t i, void * element)
+int cgc_vector_insert (cgc_vector * const vector, size_t i, const void * const element)
 {
-    if (vector != NULL)
+    int error = _cgc_vector_push_prelude (vector, element);
+    if (! error)
     {
         if (i >= vector->_max_size)
         {
@@ -215,24 +363,37 @@ int cgc_vector_insert (cgc_vector * vector, size_t i, void * element)
         {
             vector->_size = i+1;
         }
-        _cgc_vector_copy_element (vector, i, element);
+        error = _cgc_vector_copy_element (vector, i, element);
     }
-    return 0;
+
+    return error;
 }
 
-void cgc_vector_clear (cgc_vector * vector)
+int cgc_vector_clear (cgc_vector * const vector)
 {
-    vector->_size = 0;
+    return cgc_vector_erase (vector, 0, cgc_vector_size (vector));
 }
 
-int cgc_vector_erase (cgc_vector * vector, size_t start, size_t end)
+int cgc_vector_erase (cgc_vector * const vector, size_t start, size_t end)
 {
-    if (vector != NULL)
+    int error = 0;
+    if (start > end || vector == NULL || start > vector->_size)
     {
-        void * content_start = _cgc_vector_address (vector, start);
-        void * content_end = _cgc_vector_address (vector, end);
-        memmove (content_start, content_end, vector->_element_size * (end - start));
-        vector->_size -= (end - start);
+        error = -1;
+        errno = EINVAL;
     }
-    return 0;
+
+    if (! error)
+    {
+        if (vector->_clean_fun != NULL)
+            for (size_t i = start; i < end; ++i)
+                vector->_clean_fun (_cgc_vector_address (vector, i));
+
+        size_t actual_end = end > vector->_size ? vector->_size : end;
+        size_t erased_count = actual_end - start;
+        vector->_size -= erased_count;
+        _cgc_vector_shift_elements (vector, actual_end, start);
+    }
+
+    return error;
 }
